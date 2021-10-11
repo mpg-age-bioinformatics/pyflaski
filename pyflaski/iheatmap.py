@@ -7,7 +7,6 @@ from scipy.cluster.hierarchy import fcluster
 from scipy.spatial.distance import squareform
 import numpy as np
 import pandas as pd
-from flask import flash
 
 STANDARD_SIZES=[ str(i) for i in list(range(101)) ]
 STANDARD_COLORS=["blue","green","red","cyan","magenta","yellow","black","white"]
