@@ -5,12 +5,13 @@ os.environ["PYFLASKI"] = "1"
 
 import pyflaski.circularbarplots
 import pyflaski.david
-import pyflaski.icellplot
-import pyflaski.idendrogram
-import pyflaski.iheatmap
-import pyflaski.ihistogram
-import pyflaski.iscatterplot
-import pyflaski.iviolinplot
+import pyflaski.cellplot
+import pyflaski.dendrogram
+import pyflaski.heatmap
+import pyflaski.histogram
+import pyflaski.scatterplot
+import pyflaski.violinplot
+import pyflaski.gseaplot
 import pyflaski.kegg
 import pyflaski.lifespan
 import pyflaski.mds
