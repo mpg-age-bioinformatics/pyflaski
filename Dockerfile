@@ -28,6 +28,7 @@ ENV LANGUAGE en_US.UTF-8
 RUN apt-get update && apt-get -yq dist-upgrade && \
 apt-get install -yq pkg-config libcairo2-dev python3 python3-pip  && \
 python3 -m pip install -U pip && \
+pip3 install --ignore-installed pyxdg==0.26 && \
 apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /pyflaski
