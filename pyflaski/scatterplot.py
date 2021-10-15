@@ -19,10 +19,10 @@ def make_figure(df,pa):
 
     pa_={}
     for n in ["fig_width","fig_height"]:
-        if pa[n] == "":
-            pa_[n]=None
-        else:
+        if pa[n]:
             pa_[n]=float(pa[n])
+        else:
+            pa_[n]=pa[n]
 
     fig = go.Figure( )
     fig.update_layout( width=pa_["fig_width"], height=pa_["fig_height"] ) #  autosize=False,
@@ -32,18 +32,36 @@ def make_figure(df,pa):
     # the user can decide how the diferent groups should look like 
     # by unchecking the groups_autogenerate check box
     pab={}
-    for arg in ["show_legend","upper_axis","lower_axis","left_axis","right_axis", "tick_x_axis", "tick_y_axis"]:
-        if pa[arg] in ["off",".off"]:
-            pab[arg]=False
-        else:
-            pab[arg]=True
 
-    if pa["labels_col_value"] != "select a column..":
+    if "show_legend" in pa["show_legend"]:
+        pab["show_legend"]=True
+    else:
+        pab["show_legend"]=False
+
+    for a in ["upper_axis","lower_axis","left_axis","right_axis"]:
+        if a in pa["show_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
+    for a in ["tick_x_axis", "tick_y_axis"]:
+        if a in pa["tick_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
+    # for arg in ["show_legend","upper_axis","lower_axis","left_axis","right_axis", "tick_x_axis", "tick_y_axis"]:
+    #     if pa[arg] in ["off",".off"]:
+    #         pab[arg]=False
+    #     else:
+    #         pab[arg]=True
+
+    if pa["labels_col_value"]:
         df["___label___"]=df[pa["labels_col_value"]].tolist()
     else:
         df["___label___"]=df.index.tolist()
 
-    if str(pa["groups_value"])!="None":
+    if pa["groups_value"] :
 
         fig.update_layout(legend_title_text=str(pa["groups_value"]), legend=dict( title_font_color="black", font=dict( size=float(pa["legend_font_size"]), color="black" ) ) )
         
@@ -56,39 +74,54 @@ def make_figure(df,pa):
             
             pa_=[ g for g in pa["groups_settings"] if g["name"]==group ][0]
             
-            if pa_["markeralpha_col_value"] != "select a column..":
-                a=[ float(i) for i in tmp[[pa_["markeralpha_col_value"]]].dropna()[pa_["markeralpha_col_value"]].tolist() ][0]
-            else:
-                a=float(pa_["marker_alpha"])
+            # if pa_["markeralpha_col_value"] :
+            #     a=[ float(i) for i in tmp[[pa_["markeralpha_col_value"]]].dropna()[pa_["markeralpha_col_value"]].tolist() ][0]
+            # else:
+            #     a=float(pa_["marker_alpha"])
+            a=float(pa_["marker_alpha"])
 
-            if pa_["markerstyles_col"] != "select a column..":
-                marker=[ str(i) for i in tmp[[pa_["markerstyles_col"]]].dropna()[pa_["markerstyles_col"]].tolist() ][0]
-            else:
-                marker=pa_["marker"]
+            # if pa_["markerstyles_col"] :
+            #     marker=[ str(i) for i in tmp[[pa_["markerstyles_col"]]].dropna()[pa_["markerstyles_col"]].tolist() ][0]
+            # else:
+            #     marker=pa_["marker"]
+            marker=pa_["marker"]
 
-            if pa_["markersizes_col"] != "select a column..":
-                s=[ float(i) for i in tmp[[pa_["markersizes_col"]]].dropna()[pa_["markersizes_col"]].tolist() ][0]
-            else:
-                s=float(pa_["markers"])
+            # if pa_["markersizes_col"] :
+            #     s=[ float(i) for i in tmp[[pa_["markersizes_col"]]].dropna()[pa_["markersizes_col"]].tolist() ][0]
+            # else:
+            #     s=float(pa_["markers"])
+            s=float(pa_["markers"])
 
-            if pa_["markerc_col"] != "select a column..":
-                c=[ i for i in tmp[[pa_["markerc_col"]]].dropna()[pa_["markerc_col"]].tolist()][0]
-            elif str(pa_["markerc_write"]) != "":
+            # if pa_["markerc_col"] :
+            #     c=[ i for i in tmp[[pa_["markerc_col"]]].dropna()[pa_["markerc_col"]].tolist()][0]
+            # elif pa_["markerc_write"]:
+            #     c=pa_["markerc_write"]
+            # else:
+            #     c=pa_["markerc"]
+
+            if pa_["markerc_write"]:
                 c=pa_["markerc_write"]
             else:
                 c=pa_["markerc"]
 
-            if pa_["edgecolor_col"] != "select a column..":
-                edgecolor=[ i for i in tmp[[pa_["edgecolor_col"]]].dropna()[pa_["edgecolor_col"]].tolist()][0]
-            elif str(pa_["edgecolor_write"]) != "":
+            # if pa_["edgecolor_col"]:
+            #     edgecolor=[ i for i in tmp[[pa_["edgecolor_col"]]].dropna()[pa_["edgecolor_col"]].tolist()][0]
+            # elif pa_["edgecolor_write"] :
+            #     edgecolor=pa_["edgecolor_write"]
+            # else:
+            #     edgecolor=pa_["edgecolor"]
+            if pa_["edgecolor_write"] :
                 edgecolor=pa_["edgecolor_write"]
             else:
                 edgecolor=pa_["edgecolor"]
 
-            if pa_["edge_linewidth_col"] != "select a column..":
-                edge_linewidth=[ float(i) for i in tmp[[pa_["edge_linewidth_col"]]].dropna()[pa_["edge_linewidth_col"]].tolist() ][0]
-            else:
-                edge_linewidth=float(pa_["edge_linewidth"])
+            # if pa_["edge_linewidth_col"] :
+            #     edge_linewidth=[ float(i) for i in tmp[[pa_["edge_linewidth_col"]]].dropna()[pa_["edge_linewidth_col"]].tolist() ][0]
+            # else:
+            #     edge_linewidth=float(pa_["edge_linewidth"])
+
+            edge_linewidth=float(pa_["edge_linewidth"])
+
 
             # https://plotly.com/python/line-and-scatter/
             # https://plotly.com/python/marker-style/
@@ -109,9 +142,9 @@ def make_figure(df,pa):
         fig.update_layout(legend_title_text=pa["groups_value"], legend=dict( font=dict( size=float(pa["legend_font_size"]), color="black" ) ) )
 
     
-    elif pa["groups_value"]=="None":
+    elif not pa["groups_value"]:
 
-        if pa["markerstyles_col"] != "select a column..":
+        if pa["markerstyles_col"] :
             markers=[ str(i) for i in df[pa["markerstyles_col"]].tolist() ]
             df["__marker__"]=markers
         else:
@@ -125,31 +158,31 @@ def make_figure(df,pa):
             text=tmp["___label___"].tolist()
 
 
-            if pa["markeralpha_col_value"] != "select a column..":
+            if pa["markeralpha_col_value"] :
                 a=[ float(i) for i in tmp[[pa["markeralpha_col_value"]]].dropna()[pa["markeralpha_col_value"]].tolist() ][0]
             else:
                 a=float(pa["marker_alpha"])
             
-            if pa["markersizes_col"] != "select a column..":
+            if pa["markersizes_col"]:
                 s=[ float(i) for i in tmp[pa["markersizes_col"]].tolist() ]
             else:
                 s=float(pa["markers"])
 
-            if pa["markerc_col"] != "select a column..":
+            if pa["markerc_col"]:
                 c=tmp[pa["markerc_col"]].tolist()
-            elif str(pa["markerc_write"]) != "":
+            elif pa["markerc_write"]:
                 c=pa["markerc_write"]
             else:
                 c=pa["markerc"]
 
-            if pa["edgecolor_col"] != "select a column..":
+            if pa["edgecolor_col"]:
                 edgecolor=tmp[[pa["edgecolor_col"]]].dropna()[pa["edgecolor_col"]].tolist()
-            elif str(pa["edgecolor_write"]) != "":
+            elif pa["edgecolor_write"]:
                 edgecolor=pa["edgecolor_write"]
             else:
                 edgecolor=pa["edgecolor"]
 
-            if pa["edge_linewidth_col"] != "select a column..":
+            if pa["edge_linewidth_col"]:
                 edge_linewidth=[ float(i) for i in tmp[[pa["edge_linewidth_col"]]].dropna()[pa["edge_linewidth_col"]].tolist() ][0]
             else:
                 edge_linewidth=float(pa["edge_linewidth"])
@@ -169,8 +202,20 @@ def make_figure(df,pa):
                 showlegend=False,
                 name="" ) )
 
+    if  ( not pab["lower_axis"] ) & ( pab["upper_axis"] ) :
+        fig.update_layout(xaxis={'side': 'top'})
+        pab["lower_axis"]=True
+        pab["upper_axis"]=False
+
+    if  ( not pab["left_axis"] ) & ( pab["right_axis"] ) :
+        fig.update_layout(yaxis={'side': 'right'})
+        pab["left_axis"]=True
+        pab["right_axis"]=False
+
     fig.update_xaxes(zeroline=False, showline=pab["lower_axis"], linewidth=float(pa["axis_line_width"]), linecolor='black', mirror=pab["upper_axis"])
     fig.update_yaxes(zeroline=False, showline=pab["left_axis"], linewidth=float(pa["axis_line_width"]), linecolor='black', mirror=pab["right_axis"])
+
+    # fig.update_xaxes(showline=True)
 
     #"tick_left_axis", "tick_right_axis", "tick_upper_axis","tick_lower_axis"
     # print("\n\n************\n","!"+pa["ticks_direction_value"]+"!",type(pa["ticks_direction_value"]),"\n************\n\n")
@@ -185,20 +230,20 @@ def make_figure(df,pa):
         fig.update_yaxes(ticks="", tickwidth=float(pa["axis_line_width"]), tickcolor='black', ticklen=float(pa["ticks_length"]) )
 
 
-    if (pa["x_lower_limit"]!="") and (pa["x_upper_limit"]!="") :
+    if ( pa["x_lower_limit"] ) and ( pa["x_upper_limit"] ) :
         xmin=float(pa["x_lower_limit"])
         xmax=float(pa["x_upper_limit"])
         fig.update_xaxes(range=[xmin, xmax])
 
-    if (pa["y_lower_limit"]!="") and (pa["y_upper_limit"]!="") :
+    if ( pa["y_lower_limit"] ) and ( pa["y_upper_limit"] ) :
         ymin=float(pa["y_lower_limit"])
         ymax=float(pa["y_upper_limit"])
         fig.update_yaxes(range=[ymin, ymax])
 
-    if pa["maxxticks"]!="":
+    if pa["maxxticks"] :
         fig.update_xaxes(nticks=int(pa["maxxticks"]))
 
-    if pa["maxyticks"]!="":
+    if pa["maxyticks"] :
         fig.update_yaxes(nticks=int(pa["maxyticks"]))
 
     fig.update_layout(
@@ -220,8 +265,8 @@ def make_figure(df,pa):
     fig.update_yaxes(tickangle=float(pa["yticks_rotation"]), tickfont=dict(size=float(pa["yticks_fontsize"]), color="black" ))
 
 
-    if pa["grid_value"] != "None":
-        if pa["grid_color_text"]!="":
+    if pa["grid_value"] :
+        if pa["grid_color_text"] :
             grid_color=pa["grid_color_text"]
         else:
             grid_color=pa["grid_color_value"]
@@ -239,8 +284,18 @@ def make_figure(df,pa):
 
     fig.update_layout(template='plotly_white')
 
-    if (pa["labels_col_value"] != "select a column..") & (len(pa["fixed_labels"])>0):
-        if pa["labels_arrows_value"] == "None":
+    if pa["labels_col_value"]:
+        labels_col_value=True
+    else:
+        labels_col_value=False
+
+    if pa["fixed_labels"]:
+        fixed_labels=True
+    else:
+        fixed_labels=False
+
+    if ( labels_col_value ) & ( fixed_labels ):
+        if not pa["labels_arrows_value"]:
             showarrow=False
             arrowhead=0
             standoff=0
@@ -277,8 +332,8 @@ def make_figure(df,pa):
                     )
         #fig.update_traces(textposition='top center')
     
-    if pa["vline"] != "":
-        if pa["vline_color_text"]!="":
+    if pa["vline"] :
+        if pa["vline_color_text"] :
             vline_color=pa["vline_color_text"]
         else:
             vline_color=pa["vline_color_value"]
@@ -297,8 +352,8 @@ def make_figure(df,pa):
             y0=0, y1=1,\
             line=dict(color=vline_color,width=float(pa["vline_linewidth"]), dash=vline_linetype))
 
-    if pa['hline'] != "":
-        if pa["hline_color_text"]!="":
+    if pa['hline'] :
+        if pa["hline_color_text"] :
             hline_color=pa["hline_color_text"]
         else:
             hline_color=pa["hline_color_value"]
@@ -345,7 +400,7 @@ ALLOWED_MARKERS=['circle', 'circle-open', 'circle-dot', 'circle-open-dot', 'squa
   'hash-dot', 'hash-open-dot', 'y-up', 'y-up-open', 'y-down', 'y-down-open', 'y-left', 'y-left-open', 
   'y-right', 'y-right-open', 'line-ew', 'line-ew-open', 'line-ns', 'line-ns-open', 'line-ne', 
   'line-ne-open', 'line-nw', 'line-nw-open']
-TICKS_DIRECTIONS=["","outside", "inside"]
+TICKS_DIRECTIONS=["outside", "inside"]
 STANDARD_COLORS=["blue","green","red","cyan","magenta","yellow","black","white"]
 
 
@@ -377,41 +432,41 @@ def figure_defaults():
         "xvals":None,\
         "ycols":[],\
         "yvals":None,\
-        "groups":["None"],\
-        "groups_value":"None",\
+        "groups":[],\
+        "groups_value":None,\
         "list_of_groups":[],\
         "groups_settings":[],\
         "show_legend":"show_legend",\
         "legend_font_size":"14",\
         "markerstyles":ALLOWED_MARKERS,\
         "marker":"circle",\
-        "markerstyles_cols":["select a column.."],\
-        "markerstyles_col":"select a column..",\
+        "markerstyles_cols":[],\
+        "markerstyles_col":None,\
         "marker_size":STANDARD_SIZES,\
         "markers":"4",\
-        "markersizes_cols":["select a column.."],\
-        "markersizes_col":"select a column..",\
+        "markersizes_cols":[],\
+        "markersizes_col":None,\
         "marker_color":STANDARD_COLORS,\
         "markerc":"black",\
-        "markerc_write":"",\
-        "markerc_cols":["select a column.."],\
-        "markerc_col":"select a column..",\
+        "markerc_write":None,\
+        "markerc_cols":[],\
+        "markerc_col":None,\
         "marker_alpha":"1",\
-        "markeralpha_col":["select a column.."],\
-        "markeralpha_col_value":"select a column..",\
+        "markeralpha_col":[],\
+        "markeralpha_col_value":None,\
         "edge_colors":STANDARD_COLORS,\
         "edgecolor":"black",\
-        "edgecolor_cols":["select a column.."],\
-        "edgecolor_col":"select a column..",\
-        "edgecolor_write":"",\
-        "edge_linewidth_cols":["select a column.."],\
-        "edge_linewidth_col":"select a column..",\
+        "edgecolor_cols":[],\
+        "edgecolor_col":None,\
+        "edgecolor_write":None,\
+        "edge_linewidth_cols":[],\
+        "edge_linewidth_col":None,\
         "edge_linewidths":STANDARD_SIZES,\
         "edge_linewidth":"0",\
         "available_labels":[],\
         "fixed_labels":[],\
-        "labels_col":["select a column.."],\
-        "labels_col_value":"select a column..",\
+        "labels_col":[],\
+        "labels_col_value":None,\
         "labels_font_size":"10",\
         "labels_font_color":STANDARD_COLORS ,\
         "labels_font_color_value":"black",\
@@ -437,32 +492,32 @@ def figure_defaults():
         "yticks_fontsize":"14",\
         "xticks_rotation":"0",\
         "yticks_rotation":"0",\
-        "x_lower_limit":"",\
-        "y_lower_limit":"",\
-        "x_upper_limit":"",\
-        "y_upper_limit":"",\
-        "maxxticks":"",\
-        "maxyticks":"",\
+        "x_lower_limit":None,\
+        "y_lower_limit":None,\
+        "x_upper_limit":None,\
+        "y_upper_limit":None,\
+        "maxxticks":None,\
+        "maxyticks":None,\
         "grid":["both","x","y"],\
         "grid_value":[],\
-        "grid_color_text":"",\
+        "grid_color_text":None,\
         "grid_colors":STANDARD_COLORS,\
         "grid_color_value":"black",\
         "grid_linestyle":['-', '--', '-.', ':'],\
         "grid_linestyle_value":'--',\
         "grid_linewidth":"1",\
         "grid_alpha":"0.1",\
-        "hline":"",\
-        "hline_color_text":"",\
+        "hline":None,\
+        "hline_color_text":None,\
         "hline_colors":STANDARD_COLORS,\
         "hline_color_value":"black",\
         "hline_linestyle":['-', '--', '-.', ':'],\
         "hline_linestyle_value":'--',\
         "hline_linewidth":"1",\
         "hline_alpha":"0.1",\
-        "vline":"",\
-        "vline_value":"None",\
-        "vline_color_text":"",\
+        "vline":None,\
+        "vline_value":None,\
+        "vline_color_text":None,\
         "vline_colors":STANDARD_COLORS,\
         "vline_color_value":"black",\
         "vline_linestyle":['-', '--', '-.', ':'],\
