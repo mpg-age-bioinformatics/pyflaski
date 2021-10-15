@@ -39,3 +39,5 @@ tenacity==8.0.1
 threadpoolctl==3.0.0
 wheel==0.32.3
 wrapt==1.13.1
+et_xmlfile==1.1.0
+openpyxl==3.0.9

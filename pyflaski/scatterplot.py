@@ -381,7 +381,7 @@ def figure_defaults():
         "groups_value":"None",\
         "list_of_groups":[],\
         "groups_settings":[],\
-        "show_legend":".on",\
+        "show_legend":"show_legend",\
         "legend_font_size":"14",\
         "markerstyles":ALLOWED_MARKERS,\
         "marker":"circle",\
@@ -415,8 +415,8 @@ def figure_defaults():
         "labels_font_size":"10",\
         "labels_font_color":STANDARD_COLORS ,\
         "labels_font_color_value":"black",\
-        "labels_arrows":["None","0","1","2","3","4","5","6","7","8"],\
-        "labels_arrows_value":"None",\
+        "labels_arrows":["0","1","2","3","4","5","6","7","8"],\
+        "labels_arrows_value":[],\
         "labels_line_width":"0.5",\
         "labels_alpha":"0.5",\
         "labels_colors":STANDARD_COLORS,\
@@ -428,12 +428,8 @@ def figure_defaults():
         "ylabel_size":STANDARD_SIZES,\
         "ylabels":"14",\
         "axis_line_width":"1.0",\
-        "left_axis":".on" ,\
-        "right_axis":".on",\
-        "upper_axis":".on",\
-        "lower_axis":".on",\
-        "tick_x_axis":".on" ,\
-        "tick_y_axis":".on",\
+        "show_axis":["left_axis","right_axis","upper_axis","lower_axis"],\
+        "tick_axis":["tick_x_axis","tick_y_axis"],\
         "ticks_direction":TICKS_DIRECTIONS,\
         "ticks_direction_value":TICKS_DIRECTIONS[1],\
         "ticks_length":"6.0",\
@@ -447,8 +443,8 @@ def figure_defaults():
         "y_upper_limit":"",\
         "maxxticks":"",\
         "maxyticks":"",\
-        "grid":["None","both","x","y"],\
-        "grid_value":"None",\
+        "grid":["both","x","y"],\
+        "grid_value":[],\
         "grid_color_text":"",\
         "grid_colors":STANDARD_COLORS,\
         "grid_color_value":"black",\
