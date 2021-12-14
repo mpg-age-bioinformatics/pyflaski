@@ -41,3 +41,5 @@ wheel==0.32.3
 wrapt==1.13.1
 et_xmlfile==1.1.0
 openpyxl==3.0.9
+### flaski3
+kaleido==0.2.1
