@@ -41,6 +41,7 @@ def make_figure(df,pa):
         
     """
     #UPLOAD ARGUMENTS
+    print("HERE")
     vals=pa["vals"].copy()
     vals.remove(None)
     tmp=df.copy()
@@ -472,13 +473,13 @@ def figure_defaults():
 
     plot_arguments={"fig_width":"600.0",\
         "fig_height":"600.0",\
-        "title":'iViolin plot',\
+        "title":'Violin plot',\
         "title_fontsize":"20",\
         "title_fontfamily":"Default",\
         "title_fontcolor":"None",\
         "titles":"20.0",\
         "opacity":"1.0",\
-        "style":"violinplot",\
+        "style":"Violinplot",\
         "styles":STANDARD_STYLES,\
         "paper_bgcolor":"white",\
         "plot_bgcolor":"white",\
@@ -564,7 +565,7 @@ def figure_defaults():
         "title_yanchors":STANDARD_TITLE_YANCHORS,\
         "title_xanchor":"auto",\
         "title_yanchor":"auto",\
-        "show_legend":"on",\
+        "show_legend":"show_legend",\
         "axis_line_width":1.0,\
         "axis_line_color":"lightgrey",\
         "ticks_line_width":1.0,\
