@@ -49,15 +49,14 @@ def make_figure(df,pa):
 
     fig = go.Figure( )
 
-    # MAIN FIGURE
-    #Load checkboxes
+    # fix checkboxes
     pab={}
-    for arg in ["show_legend","upper_axis","lower_axis","left_axis","right_axis",\
+    for arg in ["show_legend", "upper_axis","lower_axis","left_axis","right_axis",\
         "tick_left_axis","tick_lower_axis","tick_upper_axis","tick_right_axis","bp_notched"]:
-        if pa[arg] in ["off",".off"]:
-            pab[arg]=False
-        else:
+        if arg in pa[arg]:
             pab[arg]=True
+        else:
+            pab[arg]=False
     
     #Load booleans
     booleans=["bp_boxmean","display_points"]
@@ -593,14 +592,14 @@ def figure_defaults():
         "label_fontcolor":"None",\
         "xlabels":"14",\
         "ylabels":"14",\
-        "left_axis":".on" ,\
-        "right_axis":".on",\
-        "upper_axis":".on",\
-        "lower_axis":".on",\
-        "tick_left_axis":".on" ,\
-        "tick_right_axis":".off",\
-        "tick_upper_axis":".off",\
-        "tick_lower_axis":".on",\
+        "left_axis":"left_axis" ,\
+        "right_axis":"right_axis",\
+        "upper_axis":"upper_axis",\
+        "lower_axis":"lower_axis",\
+        "tick_left_axis":"tick_left_axis" ,\
+        "tick_right_axis":"",\
+        "tick_upper_axis":"",\
+        "tick_lower_axis":"tick_lower_axis",\
         "ticks_direction":TICKS_DIRECTIONS,\
         "ticks_direction_value":TICKS_DIRECTIONS[1],\
         "ticks_length":"6.0",\
