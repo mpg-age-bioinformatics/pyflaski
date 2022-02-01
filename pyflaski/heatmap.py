@@ -50,6 +50,10 @@ def make_figure(df,pa):
         else:
             pa_[n]=pa[n]
 
+    fig = go.Figure( )
+    fig.update_layout( width=pa_["fig_width"], height=pa_["fig_height"] ) #  autosize=False,
+
+
     # checkboxes=["row_cluster","col_cluster","xticklabels","yticklabels","row_dendogram_dist", "col_dendogram_dist","reverse_color_scale"] # "robust"
     # for c in checkboxes:
     #     if (pa[c] =="on") | (pa[c] ==".on"):
@@ -297,8 +301,8 @@ def make_figure(df,pa):
     #     fig = go.Figure(data=heatmap[0])
 
     # Edit Layout
-    fig.update_layout({'width':pa_["fig_width"], 'height':pa_["fig_height"],
-                            'showlegend':False, 'hovermode': 'closest',
+    #'width':pa_["fig_width"], 'height':pa_["fig_height"]
+    fig.update_layout({'showlegend':False, 'hovermode': 'closest',
                             "yaxis":{"mirror" : "allticks", 
                                     'side': 'right',
                                     'showticklabels':pab["xticklabels"],
