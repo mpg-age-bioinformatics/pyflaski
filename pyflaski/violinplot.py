@@ -41,7 +41,6 @@ def make_figure(df,pa):
         
     """
     #UPLOAD ARGUMENTS
-    print("HERE")
     vals=pa["vals"].copy()
     vals.remove(None)
     tmp=df.copy()
@@ -563,7 +562,7 @@ def figure_defaults():
         "title_xanchors":STANDARD_TITLE_XANCHORS,\
         "title_yanchors":STANDARD_TITLE_YANCHORS,\
         "title_xanchor":"auto",\
-        "title_yanchor":"auto",\
+        "title_yanchor":"top",\
         "show_legend":"show_legend",\
         "axis_line_width":1.0,\
         "axis_line_color":"lightgrey",\
