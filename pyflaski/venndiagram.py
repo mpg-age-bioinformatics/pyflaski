@@ -30,7 +30,8 @@ def make_figure(pa):
     #fig=plt.figure(figsize=(float(pa["fig_width"]),float(pa["fig_height"])))
     fig, axes = plt.subplots(1, 1,figsize=(float(pa["fig_width"]),float(pa["fig_height"])))
 
-
+    print("HERE2")
+    print(pa["set1_values"])
     pa_={}
     sets={}
 
@@ -52,7 +53,8 @@ def make_figure(pa):
         else:
             pa_["%s_line_color" %set_index ] = pa["%s_line_color" %set_index ]
 
-
+    print(pa["set1_values"])
+    print(pa["set2_values"])
     if len( list(sets.keys()) ) == 2:
         set1=list(sets.keys())[0]
         set2=list(sets.keys())[1]
@@ -168,7 +170,10 @@ def make_figure(pa):
 
     else:
         pvalues=None
-
+    print(df)
+    print(pvalues)
+    print("HERE3")
+    #return fig
     return fig, df, pvalues
 
 STANDARD_SIZES=[ str(i) for i in list(range(101)) ]
@@ -183,8 +188,8 @@ def figure_defaults():
     """
 
     plot_arguments={
-        "fig_width":"6.0",\
-        "fig_height":"6.0",\
+        "fig_width":"600",\
+        "fig_height":"600",\
         "title":'Venn diagram',\
         "title_size":STANDARD_SIZES,\
         "title_size_value":"20",\
@@ -206,9 +211,9 @@ def figure_defaults():
         "set2_linewidth":"0.2",\
         "set3_linewidth":"0.2",\
         "linestyles":LINE_STYLES,\
-        "set1_linestyle_value":"",\
-        "set2_linestyle_value":"",\
-        "set3_linestyle_value":"",\
+        "set1_linestyle_value":"solid",\
+        "set2_linestyle_value":"solid",\
+        "set3_linestyle_value":"solid",\
         "set1_line_alpha":"0.8",\
         "set2_line_alpha":"0.8",\
         "set3_line_alpha":"0.8",\
@@ -225,7 +230,8 @@ def figure_defaults():
         "session_downloadn":"MySession.scatter.plot",\
         "inputsessionfile":"Select file..",\
         "session_argumentsn":"MyArguments.scatter.plot",\
-        "inputargumentsfile":"Select file.."
+        "inputargumentsfile":"Select file..",\
+        "groups_value":None\
     }
     # grid colors not implemented in UI
 
