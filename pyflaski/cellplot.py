@@ -20,7 +20,7 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
 
     pa_={}
     for c in checkboxes:
-        if (pa[c] =="on") | (pa[c] ==".on"):
+        if c in pa[c]:
             pa_[c]=True
         else:
             pa_[c]=False
@@ -32,9 +32,8 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         else:
             pa_[n]=float(pa[n])
 
-
-
-    david_df=david_df[ david_df[ pa["categories_column"] ].isin( pa["categories_to_plot_value"] ) ]
+    david_df=david_df[ david_df[ pa["categories_column"] ].isin( pa["categories_to_plot_value"]) ]
+    print(david_df.loc[david_df[pa["terms_column"]].isin(["GO:0023051~regulation of signaling"]), 'ease'])
 
     david_df=david_df[0: int(pa["number_of_terms"]) ]
     david_df.reset_index(inplace=True, drop=True)
@@ -106,6 +105,8 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         plotdf=pd.concat([plotdf,tmp])
     plotdf.reset_index(inplace=True, drop=True)
 
+    print(plotdf[plotdf['term'].isin(["GO:0023051~regulation of signaling"])])
+    
     for term in list(set(plotdf["term"].tolist())):
         index_values=plotdf[plotdf["term"]==term].index.tolist()
         if pa_["write_n_terms"]:
@@ -257,7 +258,7 @@ def figure_defaults(checkboxes=CHECKBOXES):
         "expression_values":"log2FoldChange",\
         "gene_name":"gene_name",\
         "plotvalue":"PValue",\
-        "log10transform":".on",\
+        "log10transform":"log10transform",\
         "number_of_terms":"20",\
         "terms_column":"Term",\
         "categories_column":"Category",\
@@ -281,7 +282,7 @@ def figure_defaults(checkboxes=CHECKBOXES):
                 'edge','hsv','icefire','phase','twilight','mrybm','mygbm'],\
         "color_scale_value":"bluered",\
         "color_continuous_midpoint":"",\
-        "reverse_color_scale":".off",\
+        "reverse_color_scale":"",\
         "lower_value":"",\
         "center_value":"",\
         "upper_value":"",\
@@ -297,24 +298,24 @@ def figure_defaults(checkboxes=CHECKBOXES):
         "xaxis_font_size":"10",\
         "title_font_size":"20",\
         "annotation_size":"12",\
-        "write_n_terms":".off",\
+        "write_n_terms":"",\
         "color_bar_title":"color bar",\
         "color_bar_title_font_size":"10",\
         "color_bar_tickwidth":"2",\
         "color_bar_tickfont":"10",\
         "color_bar_ticklen":"5",\
-        "reverse_y_order":".off",\
-        "xaxis_line":".on",\
+        "reverse_y_order":"",\
+        "xaxis_line":"xaxis_line",\
         "xaxis_linewidth":"2",\
-        "topxaxis_line":".on",\
+        "topxaxis_line":"topxaxis_line",\
         "xaxis_side_opt":["bottom","top"],\
         "xaxis_side":"bottom",\
-        "yaxis_line":".on",\
+        "yaxis_line":"yaxis_line",\
         "yaxis_linewidth":"2",\
-        "rightyaxis_line":".on",\
+        "rightyaxis_line":"rightyaxis_line",\
         "xaxis_tickwidth":"2",\
         "xaxis_ticklen":"5",\
-        "grid":".on",\
+        "grid":"grid",\
         "download_format":["png","pdf","svg"],\
         "downloadf":"pdf",\
         "downloadn":"icellplot",\
