@@ -17,7 +17,6 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         A Plotly figure.
 
     """
-
     pa_={}
     for c in checkboxes:
         if c in pa[c]:
@@ -33,7 +32,6 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
             pa_[n]=float(pa[n])
 
     david_df=david_df[ david_df[ pa["categories_column"] ].isin( pa["categories_to_plot_value"]) ]
-    print(david_df.loc[david_df[pa["terms_column"]].isin(["GO:0023051~regulation of signaling"]), 'ease'])
 
     david_df=david_df[0: int(pa["number_of_terms"]) ]
     david_df.reset_index(inplace=True, drop=True)
@@ -43,13 +41,14 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         david_df=david_df.sort_values(by=["____order____"], ascending=False)
         david_df=david_df.drop(["____order____"],axis=1)
 
-    if pa["annotation_column_value"]=="none":
+    if not pa["annotation_column_value"]:
         ge_df[ pa["gene_identifier"]]=ge_df[ pa["gene_identifier"]].astype(str)
         gedic=ge_df[[ pa["gene_identifier"] , pa["expression_values"] ]]
         gedic.loc[:, pa["gene_identifier"] ]=gedic.loc[:, pa["gene_identifier"] ].apply(lambda x: str(x).upper() )
         gedic.index=gedic[ pa["gene_identifier"] ].tolist()
         gedic=gedic.to_dict()[ pa["expression_values"] ]
     else:
+        pa["expression_values"] = pa["annotation_column_value"]
         gedic=david_df[ [ pa["david_gene_ids"], pa["annotation_column_value"] ]]
         for col in gedic.columns.tolist():
             gedic[col]=gedic[col].astype(str)
@@ -63,7 +62,7 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         gedic.index=gedic[0].tolist()
         gedic=gedic.to_dict()[ 1 ]
 
-    if pa["annotation2_column_value"]=="none":
+    if not pa["annotation2_column_value"]:
         namesdic=ge_df[[ pa["gene_identifier"] , pa["gene_name"] ]]
         namesdic.loc[:, pa["gene_identifier"] ]=namesdic.loc[:, pa["gene_identifier"] ].apply(lambda x: str(x).upper() )
         namesdic.index=namesdic[ pa["gene_identifier"] ].tolist()
@@ -88,6 +87,8 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
     for term in david_df[ pa["terms_column"]  ].tolist():
         tmp=david_df[david_df[ pa["terms_column"] ]==term]
         plotvalue=float(tmp.iloc[0,tmp.columns.tolist().index( pa["plotvalue"] )])
+        #print(plotvalue)
+        #print(type(plotvalue))
         # log10p=float(tmp.iloc[0,tmp.columns.tolist().index(pa["plotvalue"])])
         genes=tmp.iloc[0,tmp.columns.tolist().index( pa["david_gene_ids"] )].split(", ")
         tmp=pd.DataFrame({"term":term,"genes":genes})
@@ -99,13 +100,12 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         tmp.reset_index(inplace=True, drop=True)
         frac=plotvalue/len(genes)
         tmp[pa["plotvalue"]]=frac
-        if plotvalue < 0.001:
+        if float(plotvalue) < 0.001:
             plotvalue="{:.3e}".format(plotvalue)
         tmp["term value"]=plotvalue
         plotdf=pd.concat([plotdf,tmp])
     plotdf.reset_index(inplace=True, drop=True)
 
-    print(plotdf[plotdf['term'].isin(["GO:0023051~regulation of signaling"])])
     
     for term in list(set(plotdf["term"].tolist())):
         index_values=plotdf[plotdf["term"]==term].index.tolist()
