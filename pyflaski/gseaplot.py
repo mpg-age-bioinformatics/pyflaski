@@ -30,12 +30,12 @@ def make_figure(df,pa):
     # MAIN FIGURE
     pab={}
     for arg in ["upper_axis","lower_axis","left_axis","right_axis", "tick_x_axis", "tick_y_axis"]:
-        if pa[arg] in ["off",".off"]:
-            pab[arg]=False
-        else:
+        if arg in pa[arg]:
             pab[arg]=True
+        else:
+            pab[arg]=False
 
-    if pa["labels_col_value"] != "select a column..":
+    if pa["labels_col_value"]:
         df["___label___"]=df[pa["labels_col_value"]].tolist()
     else:
         df["___label___"]=df.index.tolist()
@@ -50,7 +50,7 @@ def make_figure(df,pa):
     # Define gsea line_
     if pa["gseacolor_col"] != "select a column..":
         gseacolor=tmp[[pa["gseacolor_col"]]].dropna()[pa["gseacolor_col"]].tolist()
-    elif str(pa["gseacolor_write"]) != "":
+    elif pa["gseacolor_write"]:
         gseacolor=pa["gseacolor_write"]
     else:
         gseacolor=pa["gseacolor"]
@@ -69,7 +69,7 @@ def make_figure(df,pa):
     else:
         gsea_linetype='dash'
         
-    if pa["labels_col_value"] != "select a column..":
+    if pa["labels_col_value"]:
         full_text = ['']
         for i, gene in enumerate(text[1:-1]):
             if gene != "nan":
@@ -94,7 +94,7 @@ def make_figure(df,pa):
     # Define gene ticks
     if pa["genecolor_col"] != "select a column..":
         gene_color=tmp[[pa["genecolor_col"]]].dropna()[pa["genecolor_col"]].tolist()
-    elif str(pa["genecolor_write"]) != "":
+    elif pa["genecolor_write"]:
         gene_color=pa["genecolor_write"]
     else:
         gene_color=pa["genecolor"]
@@ -137,20 +137,20 @@ def make_figure(df,pa):
     else:
         fig.update_yaxes(ticks="", tickwidth=float(pa["axis_line_width"]), tickcolor='black', ticklen=float(pa["ticks_length"]))
     
-    if (pa["x_lower_limit"]!="") and (pa["x_upper_limit"]!="") :
+    if (pa["x_lower_limit"]) and (pa["x_upper_limit"]) :
         xmin=float(pa["x_lower_limit"])
         xmax=float(pa["x_upper_limit"])
         fig.update_xaxes(range=[xmin, xmax])
 
-    if (pa["y_lower_limit"]!="") and (pa["y_upper_limit"]!="") :
+    if (pa["y_lower_limit"]) and (pa["y_upper_limit"]) :
         ymin=float(pa["y_lower_limit"])
         ymax=float(pa["y_upper_limit"])
         fig.update_yaxes(range=[ymin, ymax])
 
-    if pa["maxxticks"]!="":
+    if pa["maxxticks"]:
         fig.update_xaxes(nticks=int(pa["maxxticks"]))
 
-    if pa["maxyticks"]!="":
+    if pa["maxyticks"]:
         fig.update_yaxes(nticks=int(pa["maxyticks"]))
 
     fig.update_layout(
@@ -166,14 +166,14 @@ def make_figure(df,pa):
         title_font = {"size": int(pa["xlabels"]),"color":"black"}),
         yaxis = dict(
         title_text = pa["ylabel"],
-        title_font = {"size": int(pa["xlabels"]), "color":"black"} ) )
+        title_font = {"size": int(pa["ylabels"]), "color":"black"} ) )
 
     fig.update_xaxes(tickangle=float(pa["xticks_rotation"]), tickfont=dict(size=float(pa["xticks_fontsize"]), color="black" ))
     fig.update_yaxes(tickangle=float(pa["yticks_rotation"]), tickfont=dict(size=float(pa["yticks_fontsize"]), color="black" ))
 
 
     if pa["grid_value"] != "None":
-        if pa["grid_color_text"]!="":
+        if pa["grid_color_text"]:
             grid_color=pa["grid_color_text"]
         else:
             grid_color=pa["grid_color_value"]
@@ -191,8 +191,10 @@ def make_figure(df,pa):
 
     fig.update_layout(template='plotly_white')
 
-    if (pa["labels_col_value"] != "select a column..") & (len(pa["fixed_labels"])>0):
-        if pa["labels_arrows_value"] == "None":
+    print(pa["labels_arrows_value"])
+    if pa["labels_col_value"] and len(pa["fixed_labels"])>0:
+        if pa["labels_arrows_value"] == None:
+            print("HERE1")
             showarrow=False
             arrowhead=0
             standoff=0
@@ -237,7 +239,7 @@ def make_figure(df,pa):
     
     # plot line at 0, add yes or no box or at other spots
     if pa["centerline"] != "":
-        if pa["center_color_text"]!="":
+        if pa["center_color_text"]:
             center_color=pa["center_color_text"]
         else:
             center_color=pa["center_color_value"]
@@ -257,7 +259,7 @@ def make_figure(df,pa):
 
     
     if pa["vline"] != "":
-        if pa["vline_color_text"]!="":
+        if pa["vline_color_text"]:
             vline_color=pa["vline_color_text"]
         else:
             vline_color=pa["vline_color_value"]
@@ -277,7 +279,7 @@ def make_figure(df,pa):
             line=dict(color=vline_color,width=float(pa["vline_linewidth"]), dash=vline_linetype))
 
     if pa['hline1'] != "":
-        if pa["hline1_color_text"]!="":
+        if pa["hline1_color_text"]:
             hline1_color=pa["hline1_color_text"]
         else:
             hline1_color=pa["hline1_color_value"]
@@ -297,7 +299,7 @@ def make_figure(df,pa):
             line=dict(color=hline1_color,width=float(pa["hline1_linewidth"]), dash=hline1_linetype))
     
     if pa['hline2'] != "":
-        if pa["hline2_color_text"]!="":
+        if pa["hline2_color_text"]:
             hline2_color=pa["hline2_color_text"]
         else:
             hline2_color=pa["hline2_color_value"]
@@ -397,12 +399,12 @@ def figure_defaults():
         "ylabel_size":STANDARD_SIZES,\
         "ylabels":"14",\
         "axis_line_width":"1.0",\
-        "left_axis":".off" ,\
-        "right_axis":".off",\
-        "upper_axis":".off",\
-        "lower_axis":".off",\
-        "tick_x_axis":".on" ,\
-        "tick_y_axis":".on",\
+        "left_axis":"" ,\
+        "right_axis":"",\
+        "upper_axis":"",\
+        "lower_axis":"",\
+        "tick_x_axis":"tick_x_axis" ,\
+        "tick_y_axis":"tick_y_axis",\
         "ticks_direction":TICKS_DIRECTIONS,\
         "ticks_direction_value":TICKS_DIRECTIONS[1],\
         "ticks_length":"6.0",\
