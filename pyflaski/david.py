@@ -74,7 +74,7 @@ def debug_david(user,DEBUG_GENES=DEBUG_GENES, ids=None):
 
 
 def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
-
+    print("HERE2")
 
     #database, categories, user, ids, ids_bg = None, name = '', name_bg = '', verbose = False, p = 0.1, n = 2):
     # Modified from https://david.ncifcrf.gov/content.jsp?file=WS.html
@@ -194,14 +194,14 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
     if ids_bg:
       ids_bg = ','.join([str(i) for i in ids_bg])
 
-
+    print("before connecting")
     ssl._create_default_https_context = ssl._create_unverified_context
     url = 'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl'
     try:
       client = sudsclient(url)
     except:
       return None, None, "Could not connect to DAVID. Server might be down."
-
+    print("connected to server, checking user")
     client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
     try:
       client_auth = client.service.authenticate(user)
@@ -213,7 +213,7 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
     if verbose:
       print('User Authentication:', client_auth)
       sys.stdout.flush()
-
+    print("user checks out")
     # if ids_bg :
     #   size = client.service.addList(ids_bg, database, name, 0)
     #   if float(size) > float(0):
@@ -332,6 +332,8 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
 
     report_stats=pd.DataFrame(report_stats,columns=["Field","Value"])
 
+    print(df.head)
+    print(report_stats.head)
     return df, report_stats, None
 
 def figure_defaults():
@@ -397,7 +399,7 @@ def figure_defaults():
         "categories_literature_value":[],\
         "categories_disease":['GENETIC_ASSOCIATION_DB_DISEASE', 'OMIM_DISEASE'],\
         "categories_disease_value":['OMIM_DISEASE'],\
-        "user":"",\
+        "user":"franziska.metge@age.mpg.de",\
         "ids":"Enter target genes here...",\
         "ids_bg":"Leave empty if you want to use all annotated genes for your organism",\
         "name":"target list",\
