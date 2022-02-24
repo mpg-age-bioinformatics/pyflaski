@@ -332,8 +332,6 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
 
     report_stats=pd.DataFrame(report_stats,columns=["Field","Value"])
 
-    print(df.head)
-    print(report_stats.head)
     return df, report_stats, None
 
 def figure_defaults():
