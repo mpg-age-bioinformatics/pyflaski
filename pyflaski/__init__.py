@@ -18,6 +18,7 @@ import pyflaski.mds
 import pyflaski.pca
 import pyflaski.tsne
 import pyflaski.venndiagram
+import pyflaski.lineplot
 
 import json
 
