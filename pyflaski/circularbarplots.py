@@ -28,11 +28,23 @@ def make_figure(df,pa):
         else:
             pa_[n]=float(pa[n])
 
-    for n in ["angular_grid","angular_line","angular_ticklabels","radial_grid","radial_line","radial_visibility","radial_ticklabels"]:
-        if pa[n] in ["off", ".off"]:
-            pa_[n]=False
+    # for n in ["angular_grid","angular_line","angular_ticklabels","radial_grid","radial_line","radial_visibility","radial_ticklabels"]:
+    #     if pa[n] in ["off", ".off"]:
+    #         pa_[n]=False
+    #     else:
+    #         pa_[n]=True
+
+    for a in ["angular_grid","angular_line","angular_ticklabels"]:
+        if a in pa["angular_features"]:
+            pa_[a]=True
         else:
-            pa_[n]=True
+            pa_[a]=False
+
+    for a in ["radial_grid","radial_line","radial_visibility","radial_ticklabels"]:
+        if a in pa["radial_features"]:
+            pa_[a]=True
+        else:
+            pa_[a]=False
 
     for n in ["barnorm_val", "angular_ticks", "radial_tickside"]:
         if pa[n] == "None":
@@ -188,15 +200,16 @@ def figure_defaults():
         "polar_hole":"0.05",\
         "paper_bgcolors":STANDARD_COLORS,\
         "paper_bgcolor":"white",\
-        "angular_grid":".off",\
+        "angular_features":["angular_grid","angular_line","angular_ticklabels"],\
+        #"angular_grid":".off",\
         "angular_gridcolors":STANDARD_COLORS,\
         "angular_gridcolor":"black",\
         "angular_gridwidth":"0.5",\
-        "angular_line":".off",\
+        #"angular_line":".off",\
         "angular_linecolors":STANDARD_COLORS,\
         "angular_linecolor":"black",\
         "angular_linewidth":"0.5",\
-        "angular_ticklabels":".on",\
+        #"angular_ticklabels":".on",\
         "angular_tickcolors":STANDARD_COLORS,\
         "angular_tickcolor":"black",\
         "angular_ticklen":"2.0",\
@@ -204,14 +217,15 @@ def figure_defaults():
         "angular_tickangle":"90",\
         "angular_tickDirections":TICKS_DIRECTIONS,\
         "angular_ticks":"None",\
-        "radial_grid":".off",\
+        "radial_features":["radial_grid","radial_line","radial_visibility","radial_ticklabels"],\
+        #"radial_grid":".off",\
         "radial_gridcolors":STANDARD_COLORS,\
         "radial_gridcolor":"black",\
         "radial_gridwidth":"0.5",\
-        "radial_line":".off",\
+        #"radial_line":".off",\
         "radial_linecolors":STANDARD_COLORS,\
         "radial_linecolor":"black",\
-        "radial_visibility":".off",\
+        #"radial_visibility":".off",\
         "radial_linewidth":"1.25", 
         "radial_angle":"90",\
         "radial_tickangle":"90",\
@@ -219,7 +233,7 @@ def figure_defaults():
         "radial_tickwidth":"0",\
         "radial_tickcolors":STANDARD_COLORS,\
         "radial_tickcolor":"black",\
-        "radial_ticklabels":"o.n",\
+       # "radial_ticklabels":".on",\
         "radial_ticksides":TICKS_DIRECTIONS,\
         "radial_tickside":"None",\
         "download_format":["png","pdf","svg"],\
