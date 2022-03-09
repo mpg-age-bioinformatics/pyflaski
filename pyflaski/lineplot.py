@@ -50,12 +50,6 @@ def make_figure(df,pa):
         else:
             pab[a]=False
 
-    # for arg in ["show_legend","upper_axis","lower_axis","left_axis","right_axis", "tick_x_axis", "tick_y_axis"]:
-    #     if pa[arg] in ["off",".off"]:
-    #         pab[arg]=False
-    #     else:
-    #         pab[arg]=True
-
     if pa["labels_col_value"]:
         df["___label___"]=df[pa["labels_col_value"]].tolist()
     else:
@@ -67,140 +61,200 @@ def make_figure(df,pa):
         
         for group in pa["list_of_groups"]:
             tmp=df[df[pa["groups_value"]]==group]
-
-            x=tmp[pa["xvals"]].tolist()
-            y=tmp[pa["yvals"]].tolist()
-            text=tmp["___label___"].tolist()
-            
+ 
             pa_=[ g for g in pa["groups_settings"] if g["name"]==group ][0]
+           
+            l_main=pa_["main_line"]
+            s_main=float(pa_["main_lines"])
+
+            if pa_["main_linec_write"]:
+                c_main=pa_["main_linec_write"]
+            else:
+                c_main=pa_["main_linec"]
+
+            l_side=pa_["side_line"]
+            s_side=float(pa_["side_lines"])
+
+            if pa_["side_linec_write"]:
+                c_side=pa_["side_linec_write"]
+            else:
+                c_side=pa_["side_linec"]
+
+            if pa_["plot"] == "mean-st.dev":
+                tmp_=tmp.groupby(pa["xvals"], as_index=False).agg( mean = (pa["yvals"],'mean'), std = (pa["yvals"],'std'), 
+                var = (pa["yvals"],lambda x: np.var(x)), percentile_50 = (pa["yvals"],lambda x: np.percentile(x,50)) )
+
+                x=tmp_[pa["xvals"]].tolist()
+                y=tmp_["mean"].tolist()
+
+                tmp_["y_upper"]=tmp_["mean"]+tmp_["std"]
+                tmp_["y_lower"]=tmp_["mean"]-tmp_["std"]
+                
+                y_upper=tmp_["y_upper"].tolist()
+                y_lower=tmp_["y_lower"].tolist()
+                y_lower = y_lower[::-1]
+                x_rev = x[::-1]
+
+            elif pa_["plot"] == "mean-variance":
+                tmp_=tmp.groupby(pa["xvals"], as_index=False).agg( mean = (pa["yvals"],'mean'), std = (pa["yvals"],'std'), 
+                var = (pa["yvals"],lambda x: np.var(x)), percentile_50 = (pa["yvals"],lambda x: np.percentile(x,50)) )
+
+                x=tmp_[pa["xvals"]].tolist()
+                y=tmp_["mean"].tolist()
+
+                tmp_["y_upper"]=tmp_["mean"]+tmp_["var"]
+                tmp_["y_lower"]=tmp_["mean"]-tmp_["var"]
+                
+                y_upper=tmp_["y_upper"].tolist()
+                y_lower=tmp_["y_lower"].tolist()
+                y_lower = y_lower[::-1]
+                x_rev = x[::-1]
+     
+            elif "percentile-" in pa_["plot"]:
+                range_val=pa_["plot"]
+                range_val=range_val.split("percentile-")[1]
+                upper=float(range_val.split("/")[2])
+                lower=float(range_val.split("/")[0])
+                
+                tmp_=tmp.groupby(pa["xvals"], as_index=False).agg( mean = (pa["yvals"],'mean'), std = (pa["yvals"],'std'), var = (pa["yvals"],lambda x: np.var(x)),
+                percentile_up = (pa["yvals"],lambda x: np.percentile(x,upper)), percentile_50 = (pa["yvals"],lambda x: np.percentile(x,50)),
+                percentile_low = (pa["yvals"],lambda x: np.percentile(x,lower)) )
+                
+                x=tmp_[pa["xvals"]].tolist()
+                y=tmp_["percentile_50"].tolist()
+
+                y_upper=tmp_["percentile_up"].tolist()
+                y_lower=tmp_["percentile_low"].tolist()
+                y_lower = y_lower[::-1]
+                x_rev = x[::-1]
+
+            ## Bands
+            fig.add_trace(go.Scatter(x=x+x_rev, y=y_upper+y_lower,  \
+                        hovertemplate =pa["xvals"]+'</b>: %{x}<br><b>'+pa["yvals"]+'</b>: %{y}<br>' ,
+                        fill="toself",
+                        #fillcolor=c,
+                        line=dict(color=c_side, \
+                            width=s_side,
+                            dash=l_side),
+                        showlegend=False,\
+                        name=group) )
+                        
             
-            # if pa_["markeralpha_col_value"] :
-            #     a=[ float(i) for i in tmp[[pa_["markeralpha_col_value"]]].dropna()[pa_["markeralpha_col_value"]].tolist() ][0]
-            # else:
-            #     a=float(pa_["marker_alpha"])
-            a=float(pa_["marker_alpha"])
-
-            # if pa_["markerstyles_col"] :
-            #     marker=[ str(i) for i in tmp[[pa_["markerstyles_col"]]].dropna()[pa_["markerstyles_col"]].tolist() ][0]
-            # else:
-            #     marker=pa_["marker"]
-            marker=pa_["marker"]
-
-            # if pa_["markersizes_col"] :
-            #     s=[ float(i) for i in tmp[[pa_["markersizes_col"]]].dropna()[pa_["markersizes_col"]].tolist() ][0]
-            # else:
-            #     s=float(pa_["markers"])
-            s=float(pa_["markers"])
-
-            # if pa_["markerc_col"] :
-            #     c=[ i for i in tmp[[pa_["markerc_col"]]].dropna()[pa_["markerc_col"]].tolist()][0]
-            # elif pa_["markerc_write"]:
-            #     c=pa_["markerc_write"]
-            # else:
-            #     c=pa_["markerc"]
-
-            if pa_["markerc_write"]:
-                c=pa_["markerc_write"]
-            else:
-                c=pa_["markerc"]
-
-            # if pa_["edgecolor_col"]:
-            #     edgecolor=[ i for i in tmp[[pa_["edgecolor_col"]]].dropna()[pa_["edgecolor_col"]].tolist()][0]
-            # elif pa_["edgecolor_write"] :
-            #     edgecolor=pa_["edgecolor_write"]
-            # else:
-            #     edgecolor=pa_["edgecolor"]
-            if pa_["edgecolor_write"] :
-                edgecolor=pa_["edgecolor_write"]
-            else:
-                edgecolor=pa_["edgecolor"]
-
-            # if pa_["edge_linewidth_col"] :
-            #     edge_linewidth=[ float(i) for i in tmp[[pa_["edge_linewidth_col"]]].dropna()[pa_["edge_linewidth_col"]].tolist() ][0]
-            # else:
-            #     edge_linewidth=float(pa_["edge_linewidth"])
-
-            edge_linewidth=float(pa_["edge_linewidth"])
-
-
             # https://plotly.com/python/line-and-scatter/
             # https://plotly.com/python/marker-style/
-            fig.add_trace(go.Scatter(x=x, y=y, text=text,\
-                hovertemplate ='<b>%{text}</b><br><br><b>'+pa["xvals"]+'</b>: %{x}<br><b>'+pa["yvals"]+'</b>: %{y}<br>' ,
-                mode='markers',
-                marker=dict(symbol=marker,\
-                    color=c,
-                    size=s,
-                    opacity=a,
-                    line=dict(
-                        color=edgecolor,
-                        width=edge_linewidth
-                        )),\
+            ## Main
+            fig.add_trace(go.Scatter(x=x, y=y, \
+                hovertemplate =pa["xvals"]+'</b>: %{x}<br><b>'+pa["yvals"]+'</b>: %{y}<br>' ,
+                #line_color=c,
+                line=dict(color=c_main, \
+                            width=s_main,
+                            dash=l_main),
                 showlegend=pab["show_legend"],\
                 name=group) )
 
+        fig.update_traces(mode='lines')
         fig.update_layout(legend_title_text=pa["groups_value"], legend=dict( font=dict( size=float(pa["legend_font_size"]), color="black" ) ) )
 
     
     elif not pa["groups_value"]:
-
-        if pa["markerstyles_col"] :
-            markers=[ str(i) for i in df[pa["markerstyles_col"]].tolist() ]
-            df["__marker__"]=markers
-        else:
-            df["__marker__"]=pa["marker"]
+        # if pa["markerstyles_col"] :
+        #     markers=[ str(i) for i in df[pa["markerstyles_col"]].tolist() ]
+        #     df["__marker__"]=markers
+        # else:
+        #     df["__marker__"]=pa["marker"]
     
-        for marker in list(OrderedDict.fromkeys(df["__marker__"].tolist())):
+        # for marker in list(OrderedDict.fromkeys(df["__marker__"].tolist())):
 
-            tmp=df[df["__marker__"]==marker]
-            x=tmp[pa["xvals"]].tolist()
-            y=tmp[pa["yvals"]].tolist()
-            text=tmp["___label___"].tolist()
+        #tmp=df[df["__marker__"]==marker]
+        
+        tmp=df.copy()
 
+        l_main=pa["main_line"]
+        s_main=float(pa["main_lines"])
 
-            if pa["markeralpha_col_value"] :
-                a=[ float(i) for i in tmp[[pa["markeralpha_col_value"]]].dropna()[pa["markeralpha_col_value"]].tolist() ][0]
-            else:
-                a=float(pa["marker_alpha"])
+        if pa["main_linec_write"]:
+            c_main=pa["main_linec_write"]
+        else:
+            c_main=pa["main_linec"]
+
+        l_side=pa["side_line"]
+        s_side=float(pa["side_lines"])
+
+        if pa["side_linec_write"]:
+            c_side=pa["side_linec_write"]
+        else:
+            c_side=pa["side_linec"]
+        
+
+        if pa["plot"] == "mean-st.dev":
+            tmp_=tmp.groupby(pa["xvals"], as_index=False).agg( mean = (pa["yvals"],'mean'), std = (pa["yvals"],'std'), 
+            var = (pa["yvals"],lambda x: np.var(x)), percentile_50 = (pa["yvals"],lambda x: np.percentile(x,50)) )
+
+            x=tmp_[pa["xvals"]].tolist()
+            y=tmp_["mean"].tolist()
+
+            tmp_["y_upper"]=tmp_["mean"]+tmp_["std"]
+            tmp_["y_lower"]=tmp_["mean"]-tmp_["std"]
             
-            if pa["markersizes_col"]:
-                s=[ float(i) for i in tmp[pa["markersizes_col"]].tolist() ]
-            else:
-                s=float(pa["markers"])
+            y_upper=tmp_["y_upper"].tolist()
+            y_lower=tmp_["y_lower"].tolist()
+            y_lower = y_lower[::-1]
+            x_rev = x[::-1]
 
-            if pa["markerc_col"]:
-                c=tmp[pa["markerc_col"]].tolist()
-            elif pa["markerc_write"]:
-                c=pa["markerc_write"]
-            else:
-                c=pa["markerc"]
+        elif pa["plot"] == "mean-variance":
+            tmp_=tmp.groupby(pa["xvals"], as_index=False).agg( mean = (pa["yvals"],'mean'), std = (pa["yvals"],'std'), 
+            var = (pa["yvals"],lambda x: np.var(x)), percentile_50 = (pa["yvals"],lambda x: np.percentile(x,50)) )
 
-            if pa["edgecolor_col"]:
-                edgecolor=tmp[[pa["edgecolor_col"]]].dropna()[pa["edgecolor_col"]].tolist()
-            elif pa["edgecolor_write"]:
-                edgecolor=pa["edgecolor_write"]
-            else:
-                edgecolor=pa["edgecolor"]
+            x=tmp_[pa["xvals"]].tolist()
+            y=tmp_["mean"].tolist()
 
-            if pa["edge_linewidth_col"]:
-                edge_linewidth=[ float(i) for i in tmp[[pa["edge_linewidth_col"]]].dropna()[pa["edge_linewidth_col"]].tolist() ][0]
-            else:
-                edge_linewidth=float(pa["edge_linewidth"])
+            tmp_["y_upper"]=tmp_["mean"]+tmp_["var"]
+            tmp_["y_lower"]=tmp_["mean"]-tmp_["var"]
+            
+            y_upper=tmp_["y_upper"].tolist()
+            y_lower=tmp_["y_lower"].tolist()
+            y_lower = y_lower[::-1]
+            x_rev = x[::-1]
+    
+        elif "percentile-" in pa["plot"]:
+            range_val=pa["plot"]
+            range_val=range_val.split("percentile-")[1]
+            upper=float(range_val.split("/")[2])
+            lower=float(range_val.split("/")[0])
+            
+            tmp_=tmp.groupby(pa["xvals"], as_index=False).agg( mean = (pa["yvals"],'mean'), std = (pa["yvals"],'std'), var = (pa["yvals"],lambda x: np.var(x)),
+            percentile_up = (pa["yvals"],lambda x: np.percentile(x,upper)), percentile_50 = (pa["yvals"],lambda x: np.percentile(x,50)),
+            percentile_low = (pa["yvals"],lambda x: np.percentile(x,lower)) )
+            
+            x=tmp_[pa["xvals"]].tolist()
+            y=tmp_["percentile_50"].tolist()
 
-            fig.add_trace(go.Scatter(x=x, y=y,text=text,\
-                hovertemplate ='<b>%{text}</b><br><br><b>'+pa["xvals"]+'</b>: %{x}<br><b>'+pa["yvals"]+'</b>: %{y}<br>' ,
-                hoverinfo='skip',
-                mode='markers',
-                marker=dict(symbol=marker,\
-                    color=c,
-                    size=s,
-                    opacity=a,
+            y_upper=tmp_["percentile_up"].tolist()
+            y_lower=tmp_["percentile_low"].tolist()
+            y_lower = y_lower[::-1]
+            x_rev = x[::-1]
+
+        fig.add_trace(go.Scatter(x=x+x_rev, y=y_upper+y_lower, \
+                    hovertemplate =pa["xvals"]+'</b>: %{x}<br><b>'+pa["yvals"]+'</b>: %{y}<br>' ,
+                    fill="toself",
+                    #fillcolor=c,
                     line=dict(
-                        color=edgecolor,
-                        width=edge_linewidth
-                        )),\
-                showlegend=False,
-                name="" ) )
+                        color=c_side,
+                        width=s_side,
+                        dash=l_side),\
+                    showlegend=False,\
+                    name="") )
+                    
+
+        fig.add_trace(go.Scatter(x=x, y=y,\
+            hovertemplate =pa["xvals"]+'</b>: %{x}<br><b>'+pa["yvals"]+'</b>: %{y}<br>' ,
+            #hoverinfo='skip',
+            line=dict(
+                color=c_main,
+                width=s_main,
+                dash=l_main),\
+            showlegend=False,
+            name="" ) )
 
     if  ( not pab["lower_axis"] ) & ( pab["upper_axis"] ) :
         fig.update_layout(xaxis={'side': 'top'})
@@ -212,6 +266,7 @@ def make_figure(df,pa):
         pab["left_axis"]=True
         pab["right_axis"]=False
 
+    fig.update_traces(mode='lines')
     fig.update_xaxes(zeroline=False, showline=pab["lower_axis"], linewidth=float(pa["axis_line_width"]), linecolor='black', mirror=pab["upper_axis"])
     fig.update_yaxes(zeroline=False, showline=pab["left_axis"], linewidth=float(pa["axis_line_width"]), linecolor='black', mirror=pab["right_axis"])
 
@@ -375,33 +430,11 @@ def make_figure(df,pa):
     return fig
 
 STANDARD_SIZES=[ str(i) for i in list(range(101)) ]
-ALLOWED_MARKERS=['circle', 'circle-open', 'circle-dot', 'circle-open-dot', 'square', 'square-open', 
-'square-dot', 'square-open-dot', 'diamond', 'diamond-open', 'diamond-dot', 'diamond-open-dot', 
-'cross', 'cross-open', 'cross-dot', 'cross-open-dot', 'x', 'x-open', 'x-dot', 'x-open-dot', 
-'triangle-up', 'triangle-up-open', 'triangle-up-dot', 'triangle-up-open-dot', 'triangle-down', 
-'triangle-down-open', 'triangle-down-dot', 'triangle-down-open-dot', 'triangle-left', 'triangle-left-open', 
-'triangle-left-dot', 'triangle-left-open-dot', 'triangle-right', 'triangle-right-open', 'triangle-right-dot', 
-'triangle-right-open-dot', 'triangle-ne', 'triangle-ne-open', 'triangle-ne-dot', 'triangle-ne-open-dot', 
-'triangle-se', 'triangle-se-open', 'triangle-se-dot', 'triangle-se-open-dot', 'triangle-sw', 
-'triangle-sw-open', 'triangle-sw-dot', 'triangle-sw-open-dot', 'triangle-nw', 'triangle-nw-open',
- 'triangle-nw-dot', 'triangle-nw-open-dot', 'pentagon', 'pentagon-open', 'pentagon-dot', 'pentagon-open-dot', 
- 'hexagon', 'hexagon-open', 'hexagon-dot', 'hexagon-open-dot', 'hexagon2', 'hexagon2-open', 'hexagon2-dot',
-  'hexagon2-open-dot', 'octagon', 'octagon-open', 'octagon-dot', 'octagon-open-dot', 'star', 'star-open', 
-  'star-dot', 'star-open-dot', 'hexagram', 'hexagram-open', 'hexagram-dot', 'hexagram-open-dot', 
-  'star-triangle-up', 'star-triangle-up-open', 'star-triangle-up-dot', 'star-triangle-up-open-dot', 
-  'star-triangle-down', 'star-triangle-down-open', 'star-triangle-down-dot', 'star-triangle-down-open-dot', 
-  'star-square', 'star-square-open', 'star-square-dot', 'star-square-open-dot', 'star-diamond', 
-  'star-diamond-open', 'star-diamond-dot', 'star-diamond-open-dot', 'diamond-tall', 'diamond-tall-open', 
-  'diamond-tall-dot', 'diamond-tall-open-dot', 'diamond-wide', 'diamond-wide-open', 'diamond-wide-dot', 
-  'diamond-wide-open-dot', 'hourglass', 'hourglass-open', 'bowtie', 'bowtie-open', 'circle-cross', 
-  'circle-cross-open', 'circle-x', 'circle-x-open', 'square-cross', 'square-cross-open', 'square-x', 
-  'square-x-open', 'diamond-cross', 'diamond-cross-open', 'diamond-x', 'diamond-x-open', 'cross-thin', 
-  'cross-thin-open', 'x-thin', 'x-thin-open', 'asterisk', 'asterisk-open', 'hash', 'hash-open', 
-  'hash-dot', 'hash-open-dot', 'y-up', 'y-up-open', 'y-down', 'y-down-open', 'y-left', 'y-left-open', 
-  'y-right', 'y-right-open', 'line-ew', 'line-ew-open', 'line-ns', 'line-ns-open', 'line-ne', 
-  'line-ne-open', 'line-nw', 'line-nw-open']
+ALLOWED_LINES=['solid', 'dot', 'dash', 'longdash', 'dashdot', 'longdashdot']
 TICKS_DIRECTIONS=["outside", "inside"]
 STANDARD_COLORS=["blue","green","red","cyan","magenta","yellow","black","white"]
+PLOT_TYPES=["mean-st.dev","mean-variance","percentile-2.5/50/97.5","percentile-5.0/50/95.0", "percentile-7.5/50/92.5", "percentile-10.0/50/90.0",
+"percentile-12.5/50/87.5", "percentile-15.0/50/85.0", "percentile-17.5/50/82.5", "percentile-20.0/50/80.0"]
 
 
 def figure_defaults():
@@ -425,7 +458,7 @@ def figure_defaults():
     plot_arguments={
         "fig_width":"600",\
         "fig_height":"600",\
-        "title":'Scatter plot',\
+        "title":'Line plot',\
         "title_size":STANDARD_SIZES,\
         "titles":"20",\
         "xcols":[],\
@@ -438,31 +471,27 @@ def figure_defaults():
         "groups_settings":[],\
         "show_legend":"show_legend",\
         "legend_font_size":"14",\
-        "markerstyles":ALLOWED_MARKERS,\
-        "marker":"circle",\
-        "markerstyles_cols":[],\
-        "markerstyles_col":None,\
-        "marker_size":STANDARD_SIZES,\
-        "markers":"4",\
-        "markersizes_cols":[],\
-        "markersizes_col":None,\
-        "marker_color":STANDARD_COLORS,\
-        "markerc":"black",\
-        "markerc_write":None,\
-        "markerc_cols":[],\
-        "markerc_col":None,\
-        "marker_alpha":"1",\
-        "markeralpha_col":[],\
-        "markeralpha_col_value":None,\
-        "edge_colors":STANDARD_COLORS,\
-        "edgecolor":"black",\
-        "edgecolor_cols":[],\
-        "edgecolor_col":None,\
-        "edgecolor_write":None,\
-        "edge_linewidth_cols":[],\
-        "edge_linewidth_col":None,\
-        "edge_linewidths":STANDARD_SIZES,\
-        "edge_linewidth":"0",\
+
+        "linestyles":ALLOWED_LINES,\
+        "main_line":"solid",\
+        "side_line":"solid",\
+        "line_size":STANDARD_SIZES,\
+        "main_lines":"1",\
+        "side_lines":"1",\
+        "line_color":STANDARD_COLORS,\
+        "main_linec":"black",\
+        "main_linec_write":None,\
+        "side_linec":"black",\
+        "side_linec_write":None,\
+      
+        #"marker_alpha":"1",\
+        #"markeralpha_col":[],\
+        #"markeralpha_col_value":None,\
+        #"range_vals":[None,"st.dev","variance","percentile"],\
+        #"range":"st.dev",\
+        "plot_types":PLOT_TYPES,\
+        "plot":"mean-st.dev",\
+
         "available_labels":[],\
         "fixed_labels":[],\
         "labels_col":[],\
