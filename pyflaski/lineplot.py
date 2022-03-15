@@ -80,6 +80,8 @@ def make_figure(df,pa):
             else:
                 c_side=pa_["side_linec"]
 
+            cf=pa_["fill_color"]
+
             if pa_["plot"] == "mean-st.dev":
                 tmp_=tmp.groupby(pa["xvals"], as_index=False).agg( mean = (pa["yvals"],'mean'), std = (pa["yvals"],'std'), 
                 var = (pa["yvals"],lambda x: np.var(x)), percentile_50 = (pa["yvals"],lambda x: np.percentile(x,50)) )
@@ -132,7 +134,7 @@ def make_figure(df,pa):
             fig.add_trace(go.Scatter(x=x+x_rev, y=y_upper+y_lower,  \
                         hovertemplate =pa["xvals"]+'</b>: %{x}<br><b>'+pa["yvals"]+'</b>: %{y}<br>' ,
                         fill="toself",
-                        #fillcolor=c,
+                        fillcolor=cf,
                         line=dict(color=c_side, \
                             width=s_side,
                             dash=l_side),
@@ -157,15 +159,6 @@ def make_figure(df,pa):
 
     
     elif not pa["groups_value"]:
-        # if pa["markerstyles_col"] :
-        #     markers=[ str(i) for i in df[pa["markerstyles_col"]].tolist() ]
-        #     df["__marker__"]=markers
-        # else:
-        #     df["__marker__"]=pa["marker"]
-    
-        # for marker in list(OrderedDict.fromkeys(df["__marker__"].tolist())):
-
-        #tmp=df[df["__marker__"]==marker]
         
         tmp=df.copy()
 
@@ -184,6 +177,8 @@ def make_figure(df,pa):
             c_side=pa["side_linec_write"]
         else:
             c_side=pa["side_linec"]
+
+        cf=pa["fill_color"]
         
 
         if pa["plot"] == "mean-st.dev":
@@ -237,7 +232,7 @@ def make_figure(df,pa):
         fig.add_trace(go.Scatter(x=x+x_rev, y=y_upper+y_lower, \
                     hovertemplate =pa["xvals"]+'</b>: %{x}<br><b>'+pa["yvals"]+'</b>: %{y}<br>' ,
                     fill="toself",
-                    #fillcolor=c,
+                    fillcolor=cf,
                     line=dict(
                         color=c_side,
                         width=s_side,
@@ -471,7 +466,6 @@ def figure_defaults():
         "groups_settings":[],\
         "show_legend":"show_legend",\
         "legend_font_size":"14",\
-
         "linestyles":ALLOWED_LINES,\
         "main_line":"solid",\
         "side_line":"solid",\
@@ -483,15 +477,9 @@ def figure_defaults():
         "main_linec_write":None,\
         "side_linec":"black",\
         "side_linec_write":None,\
-      
-        #"marker_alpha":"1",\
-        #"markeralpha_col":[],\
-        #"markeralpha_col_value":None,\
-        #"range_vals":[None,"st.dev","variance","percentile"],\
-        #"range":"st.dev",\
+        "fill_color":None,\
         "plot_types":PLOT_TYPES,\
         "plot":"mean-st.dev",\
-
         "available_labels":[],\
         "fixed_labels":[],\
         "labels_col":[],\
