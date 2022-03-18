@@ -50,8 +50,25 @@ def make_figure(df,pa):
 
     # fix checkboxes
     pab={}
-    for arg in ["show_legend", "upper_axis","lower_axis","left_axis","right_axis",\
-        "tick_left_axis","tick_lower_axis","tick_upper_axis","tick_right_axis","bp_notched"]:
+
+    if "show_legend" in pa["show_legend"]:
+        pab["show_legend"]=True
+    else:
+        pab["show_legend"]=False
+
+    for a in ["upper_axis","lower_axis","left_axis","right_axis"]:
+        if a in pa["show_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
+    for a in ["tick_lower_axis", "tick_left_axis"]:
+        if a in pa["tick_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
+    for arg in ["bp_notched"]:
         if arg in pa[arg]:
             pab[arg]=True
         else:
@@ -252,45 +269,36 @@ def make_figure(df,pa):
     fig.update_layout(title=title)
 
 
-    #Update axes
+    # #Update axes
     
     if pa["log_scale"]==True and pa["orientation"]=="vertical":
         fig.update_yaxes(type="log")
     elif pa["log_scale"]==True and pa["orientation"]=="horizontal":
         fig.update_xaxes(type="log")
 
-    fig.update_xaxes(zeroline=False, showline=pab["lower_axis"], linewidth=pab["axis_line_width"], linecolor=pab["axis_line_color"])
-    fig.update_yaxes(zeroline=False, showline=pab["left_axis"], linewidth=pab["axis_line_width"], linecolor=pab["axis_line_color"])
+    if  ( not pab["lower_axis"] ) & ( pab["upper_axis"] ) :
+        fig.update_layout(xaxis={'side': 'top'})
+        pab["lower_axis"]=True
+        pab["upper_axis"]=False
 
-    #Update ticks
+    if  ( not pab["left_axis"] ) & ( pab["right_axis"] ) :
+        fig.update_layout(yaxis={'side': 'right'})
+        pab["left_axis"]=True
+        pab["right_axis"]=False
 
-    if pab["tick_lower_axis"]==False and pab["tick_right_axis"]==False and pab["tick_left_axis"]==False and pab["tick_upper_axis"]==False:
-        pa["ticks_direction_value"]=""
-        ticks=""
+    fig.update_xaxes(zeroline=False, showline=pab["lower_axis"], linewidth=float(pa["axis_line_width"]), linecolor=pab["axis_line_color"], mirror=pab["upper_axis"])
+    fig.update_yaxes(zeroline=False, showline=pab["left_axis"], linewidth=float(pa["axis_line_width"]), linecolor=pab["axis_line_color"], mirror=pab["right_axis"])
+
+    if pab["tick_lower_axis"] :
+        fig.update_xaxes(ticks=pa["ticks_direction_value"], tickwidth=float(pa["axis_line_width"]), tickcolor=pab["ticks_color"], ticklen=float(pa["ticks_length"]) )
     else:
-        ticks=pa["ticks_direction_value"]
+        fig.update_xaxes(ticks="", tickwidth=float(pa["axis_line_width"]), tickcolor=pab["ticks_color"], ticklen=float(pa["ticks_length"]) )
 
-    fig.update_xaxes(ticks=ticks, tickwidth=pab["ticks_line_width"], tickcolor=pab["ticks_color"], ticklen=pab["ticks_length"])
-    fig.update_yaxes(ticks=ticks, tickwidth=pab["ticks_line_width"], tickcolor=pab["ticks_color"], ticklen=pab["ticks_length"])
+    if pab["tick_left_axis"] :
+        fig.update_yaxes(ticks=pa["ticks_direction_value"], tickwidth=float(pa["axis_line_width"]), tickcolor=pab["ticks_color"], ticklen=float(pa["ticks_length"]) )
+    else:
+        fig.update_yaxes(ticks="", tickwidth=float(pa["axis_line_width"]), tickcolor=pab["ticks_color"], ticklen=float(pa["ticks_length"]) )
 
-    #Update mirror property of axis based on ticks and axis selected by user
-    #Determines if the axis lines or/and ticks are mirrored to the opposite side of the plotting area. 
-    # If "True", the axis lines are mirrored. If "ticks", the axis lines and ticks are mirrored. If "False", mirroring is disable. 
-    # If "all", axis lines are mirrored on all shared-axes subplots. If "allticks", axis lines and ticks are mirrored on all shared-axes subplots.
-    if pab["upper_axis"]==True and pab["tick_upper_axis"]==True:
-        fig.update_xaxes(mirror="ticks")
-    elif pab["upper_axis"]==True and pab["tick_upper_axis"]==False:
-        fig.update_xaxes(mirror=True)
-    else:
-        fig.update_xaxes(mirror=False)
-    
-    
-    if pab["right_axis"]==True and pab["tick_right_axis"]==True:
-        fig.update_yaxes(mirror="ticks")
-    elif pab["right_axis"]==True and pab["tick_right_axis"]==False:
-        fig.update_yaxes(mirror=True)
-    else:
-        fig.update_xaxes(mirror=False)
 
     if (pa["x_lower_limit"]!="") and (pa["x_upper_limit"]!="") :
         xmin=pab["x_lower_limit"]
@@ -308,6 +316,16 @@ def make_figure(df,pa):
     if pa["maxyticks"]!="":
         fig.update_yaxes(nticks=pab["maxyticks"])
 
+    #UPDATE X AXIS AND Y AXIS LAYOUT
+
+    xaxis=dict(visible=True, title=dict(text=pa["xlabel"],font=dict(family=pab["label_fontfamily"],size=pab["label_fontsize"],color=pab["label_fontcolor"])))
+    yaxis=dict(visible=True, title=dict(text=pa["ylabel"],font=dict(family=pab["label_fontfamily"],size=pab["label_fontsize"],color=pab["label_fontcolor"])))
+
+    fig.update_layout(paper_bgcolor=pab["paper_bgcolor"],plot_bgcolor=pab["plot_bgcolor"],xaxis = xaxis,yaxis = yaxis)
+
+    fig.update_xaxes(tickangle=pab["xticks_rotation"], tickfont=dict(size=pab["xticks_fontsize"]))
+    fig.update_yaxes(tickangle=pab["yticks_rotation"], tickfont=dict(size=pab["yticks_fontsize"]))
+
     #Update spikes
     
     if pa["spikes_value"]=="both":
@@ -323,17 +341,6 @@ def make_figure(df,pa):
     elif pa["spikes_value"]=="None":
         fig.update_xaxes(showspikes=None)
         fig.update_yaxes(showspikes=None)
-
-
-    #UPDATE X AXIS AND Y AXIS LAYOUT
-
-    xaxis=dict(visible=True, title=dict(text=pa["xlabel"],font=dict(family=pab["label_fontfamily"],size=pab["label_fontsize"],color=pab["label_fontcolor"])))
-    yaxis=dict(visible=True, title=dict(text=pa["ylabel"],font=dict(family=pab["label_fontfamily"],size=pab["label_fontsize"],color=pab["label_fontcolor"])))
-
-    fig.update_layout(paper_bgcolor=pab["paper_bgcolor"],plot_bgcolor=pab["plot_bgcolor"],xaxis = xaxis,yaxis = yaxis)
-
-    fig.update_xaxes(tickangle=pab["xticks_rotation"], tickfont=dict(size=pab["xticks_fontsize"]))
-    fig.update_yaxes(tickangle=pab["yticks_rotation"], tickfont=dict(size=pab["yticks_fontsize"]))
 
     #UPDATE GRID PROPERTIES
 
@@ -591,14 +598,16 @@ def figure_defaults():
         "label_fontcolor":"None",\
         "xlabels":"14",\
         "ylabels":"14",\
-        "left_axis":"left_axis" ,\
-        "right_axis":"right_axis",\
-        "upper_axis":"upper_axis",\
-        "lower_axis":"lower_axis",\
-        "tick_left_axis":"tick_left_axis" ,\
-        "tick_right_axis":"",\
-        "tick_upper_axis":"",\
-        "tick_lower_axis":"tick_lower_axis",\
+        # "left_axis":"left_axis" ,\
+        # "right_axis":"right_axis",\
+        # "upper_axis":"upper_axis",\
+        # "lower_axis":"lower_axis",\
+        # "tick_left_axis":"tick_left_axis" ,\
+        # "tick_right_axis":"",\
+        # "tick_upper_axis":"",\
+        # "tick_lower_axis":"tick_lower_axis",\
+        "show_axis":["left_axis","right_axis","upper_axis","lower_axis"],\
+        "tick_axis":["tick_lower_axis","tick_left_axis"],\
         "ticks_direction":TICKS_DIRECTIONS,\
         "ticks_direction_value":TICKS_DIRECTIONS[1],\
         "ticks_length":"6.0",\
