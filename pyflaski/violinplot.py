@@ -108,7 +108,7 @@ def make_figure(df,pa):
             pab[a]=int(pa[a])
 
     #Load Nones
-    possible_nones=["x_val","y_val","hue","title_fontcolor","axis_line_color","ticks_color","spikes_color","label_fontcolor",\
+    possible_nones=["x_val","y_val","hue","vp_label","title_fontcolor","axis_line_color","ticks_color","spikes_color","label_fontcolor",\
     "paper_bgcolor","plot_bgcolor","grid_color","legend_bgcolor","legend_bordercolor","legend_fontcolor","legend_title_fontcolor",\
     "title_fontfamily","label_fontfamily","legend_fontfamily","legend_title_fontfamily","vp_hover_bgcolor","vp_hover_bordercolor",\
     "vp_hover_fontfamily","vp_hover_fontcolor","vp_linecolor","vp_meanline_color","marker_outliercolor","marker_fillcolor",\
@@ -141,7 +141,9 @@ def make_figure(df,pa):
     #MAIN BODY
 
     if "Violinplot" in pa["style"]:
-        if "," in pa["vp_text"]:
+        if pa["vp_label"]:
+            vp_text=tmp[pa["vp_label"]].tolist()
+        elif "," in pa["vp_text"]:
             vp_text=pa["vp_text"].split(",")
         else:
             vp_text=pa["vp_text"]
@@ -229,7 +231,9 @@ def make_figure(df,pa):
             fig.update_layout(violingap=pab["vp_gap"], violingroupgap=pab["vp_groupgap"],violinmode=pa["vp_mode"])
 
     if "Boxplot" in pa["style"]:
-        if "," in pa["bp_text"]:
+        if pa["vp_label"]:
+            bp_text=tmp[pa["vp_label"]].tolist()
+        elif "," in pa["bp_text"]:
             bp_text=pa["bp_text"].split(",")
         else:
             bp_text=pa["bp_text"]
@@ -359,6 +363,54 @@ def make_figure(df,pa):
 
     fig.update_layout(template='plotly_white')
 
+    # add fixed labels
+    if pa["vp_label"]:
+        labels_col_value=True
+    else:
+        labels_col_value=False
+
+    if pa["fixed_labels"]:
+        fixed_labels=True
+    else:
+        fixed_labels=False
+
+    if ( labels_col_value ) & ( fixed_labels ):
+        if not pa["fixed_labels_arrows_value"]:
+            showarrow=False
+            arrowhead=0
+            standoff=0
+            yshift=10
+        else:
+            showarrow=True
+            arrowhead=int(pa["fixed_labels_arrows_value"])
+            standoff=4
+            yshift=0
+        fl_tmp=df[df[pa["vp_label"]].isin( pa["fixed_labels"]  )]
+        
+        x_values=fl_tmp[pa["x_val"]].tolist()
+        y_values=fl_tmp[pa["y_val"]].tolist()
+        text_values=fl_tmp[pa["vp_label"]].tolist()
+
+        for x,y,text in zip(x_values,y_values,text_values):
+            fig.add_annotation(
+                    x=x,
+                    y=y,
+                    text=text,
+                    showarrow=showarrow,
+                    arrowhead=arrowhead,
+                    clicktoshow="onoff",
+                    visible=True,
+                    standoff=standoff,
+                    yshift=yshift,
+                    opacity=float(pa["labels_alpha"]),
+                    arrowwidth=float(pa["labels_line_width"]),
+                    arrowcolor=pa["fixed_labels_colors_value"],
+                    font=dict(
+                        size=float(pa["fixed_labels_font_size"]),
+                        color=pa["fixed_labels_font_color_value"]
+                        )
+                    )
+        #fig.update_traces(textposition='top center')
     #UPDATE LEGEND PROPERTIES
     if pab["show_legend"]==True:
 
@@ -579,6 +631,7 @@ def figure_defaults():
         "groups":[],\
         "vals":[],\
         "hue":None,\
+        "vp_label": None,\
         "x_val":None,\
         "y_val":None,\
         "groups_settings":dict(),\
@@ -598,6 +651,14 @@ def figure_defaults():
         "label_fontcolor":"None",\
         "xlabels":"14",\
         "ylabels":"14",\
+        "fixed_labels":[],\
+        "fixed_labels_font_size":"10",\
+        "fixed_labels_font_color_value":"black",\
+        "labels_arrows":["0","1","2","3","4","5","6","7","8"],\
+        "fixed_labels_arrows_value":[],\
+        "fixed_labels_colors_value":"black",\
+        "labels_alpha":"0.5",\
+        "labels_line_width":"0.5",\
         # "left_axis":"left_axis" ,\
         # "right_axis":"right_axis",\
         # "upper_axis":"upper_axis",\
