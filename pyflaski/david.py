@@ -136,39 +136,43 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
       idsdf.index=idsdf[0].tolist()
       idsdf=idsdf.drop([0],axis=1)
       ids_map=idsdf.to_dict()
+
+    if pa["ids_bg"] :
   
-    if " ".join( pa["ids_bg"].split(" ")[:12] ) != "Leave empty if you want to use all annotated genes for your":
-      ids_bg=pa["ids_bg"].split("\n")
-      ids_bg=[ s.rstrip("\r").strip(" ") for s in ids_bg ]
-      ids_bg=[ s for s in ids_bg if s != " "]
-      ids_bg=[ s for s in ids_bg if len(s) > 0 ]
-      if len(ids_bg) == 0:
-        ids_bg = None
+      if " ".join( pa["ids_bg"].split(" ")[:12] ) != "Leave empty if you want to use all annotated genes for your":
+        ids_bg=pa["ids_bg"].split("\n")
+        ids_bg=[ s.rstrip("\r").strip(" ") for s in ids_bg ]
+        ids_bg=[ s for s in ids_bg if s != " "]
+        ids_bg=[ s for s in ids_bg if len(s) > 0 ]
+        if len(ids_bg) == 0:
+          ids_bg = None
+        else:
+            if database in names_dbs:
+              file_dic={"name_hsa_ensembl":"Homo_sapiens.GRCh38.92.tsv", "name_mus_ensembl":"Mus_musculus.GRCm38.92.tsv", "name_cel_ensembl":"Caenorhabditis_elegans.WBcel235.92.tsv","name_dros_ensembl":"Drosophila_melanogaster.BDGP6.92.tsv"}
+              id_name=pd.read_csv(path_to_ensembl_maps+file_dic[database],sep="\t")
+              id_name_=id_name.copy()
+              db_names=id_name["gene_name"].tolist()
+              query_names=",".join(ids_bg)
+              found_values, emsg=fuzzy_search(query_names,db_names)
+              if emsg:
+                return None, None, emsg
+              id_name["gene_name"]=id_name["gene_name"].apply(lambda x: str(x).lower() )
+              id_name.index=id_name["gene_name"].tolist()
+              id_name=id_name.to_dict()["gene_id"]
+              ids_bg=[ id_name[ str(x).lower() ] for x in ids_bg  ]
+              id_name_=id_name_[ id_name_["gene_id"].isin(ids_bg) ]
+              id_name_["gene_id"]=id_name_["gene_id"].apply(lambda x: str(x).upper() )
+              id_name_.index=id_name_["gene_id"].tolist()
+              id_name_=id_name_.to_dict()["gene_name"]
+            else:
+              id_name_=None
+
+              # bg_gene_names= keep on here
       else:
-          if database in names_dbs:
-            file_dic={"name_hsa_ensembl":"Homo_sapiens.GRCh38.92.tsv", "name_mus_ensembl":"Mus_musculus.GRCm38.92.tsv", "name_cel_ensembl":"Caenorhabditis_elegans.WBcel235.92.tsv","name_dros_ensembl":"Drosophila_melanogaster.BDGP6.92.tsv"}
-            id_name=pd.read_csv(path_to_ensembl_maps+file_dic[database],sep="\t")
-            id_name_=id_name.copy()
-            db_names=id_name["gene_name"].tolist()
-            query_names=",".join(ids_bg)
-            found_values, emsg=fuzzy_search(query_names,db_names)
-            if emsg:
-              return None, None, emsg
-            id_name["gene_name"]=id_name["gene_name"].apply(lambda x: str(x).lower() )
-            id_name.index=id_name["gene_name"].tolist()
-            id_name=id_name.to_dict()["gene_id"]
-            ids_bg=[ id_name[ str(x).lower() ] for x in ids_bg  ]
-            id_name_=id_name_[ id_name_["gene_id"].isin(ids_bg) ]
-            id_name_["gene_id"]=id_name_["gene_id"].apply(lambda x: str(x).upper() )
-            id_name_.index=id_name_["gene_id"].tolist()
-            id_name_=id_name_.to_dict()["gene_name"]
-          else:
-            id_name_=None
-
-            # bg_gene_names= keep on here
-
+        ids_bg=None
     else:
       ids_bg=None
+
     name=pa["name"]
     if ids_bg is not None:
       name_bg=pa["name_bg"]
