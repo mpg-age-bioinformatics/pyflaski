@@ -397,7 +397,7 @@ def figure_defaults():
         "categories_literature_value":[],\
         "categories_disease":['GENETIC_ASSOCIATION_DB_DISEASE', 'OMIM_DISEASE'],\
         "categories_disease_value":['OMIM_DISEASE'],\
-        "user":"franziska.metge@age.mpg.de",\
+        "user":"your.email@provider.com",\
         "ids":"Enter target genes here...",\
         "ids_bg":"Leave empty if you want to use all annotated genes for your organism",\
         "name":"target list",\
