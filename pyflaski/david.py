@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import sys
 from suds.client import Client as sudsclient
 import ssl
@@ -90,6 +91,14 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
         None if no ids match the queried database, or a  Pandas DataFrame with results.
 
     """
+
+    pab={}
+
+    if "zscore" in pa["zscore"]:
+        zscore=True
+    else:
+        zscore=False
+
 
     database=pa["database_value"]
     categories_=[ s for s in list( pa.keys() ) ]
@@ -291,13 +300,24 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
             df[col] = df[col].apply(lambda x: x.decode())
 
         df.columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"]
-        
+        if zscore:
+          df["Z-score"] = np.NaN
         # insert ensembl gene name to gene id here 
         
         if len(list(ids_map.keys())) > 0:
           for annotation in list(ids_map.keys()):
             genes_to_annotation=ids_map[annotation]
             df["annotation_%s" %str(annotation)]=df["Genes"].apply(lambda x:get_map(x,ids_map=genes_to_annotation) )
+
+        # c        
+        zscores=[]
+        if zscore and not pa['log2fc_column'] == None:
+           for index, rows in df.iterrows():
+             log2fcs = [float(x) for x in rows["annotation_%s" %(pa["log2fc_column"])].split(', ')]
+             genes_up = sum(i > 0 for i in log2fcs)
+             genes_down = sum(i < 0 for i in log2fcs)
+             zscores.append((genes_up - genes_down) / np.sqrt(len(log2fcs)))
+           df["Z-score"] = zscores
     
     else:
         df=pd.DataFrame(columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"])
@@ -414,6 +434,8 @@ def figure_defaults():
         "session_downloadn":"MySession.DAVID",\
         "inputsessionfile":"Select file..",\
         "session_argumentsn":"MyArguments.DAVID",\
-        "inputargumentsfile":"Select file.."}
+        "inputargumentsfile":"Select file..",\
+        "zscore":"",\
+        "log2fc_column":None}
 
     return plot_arguments
