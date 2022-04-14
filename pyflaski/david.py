@@ -94,7 +94,7 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
 
     pab={}
 
-    if "zscore" in pa["zscore"]:
+    if not pa["log2fc_column"] == None:
         zscore=True
     else:
         zscore=False
@@ -317,15 +317,15 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
         # c        
         zscores=[]
         if zscore: 
-          if not pa['log2fc_column'] == None:
-            for index, rows in df.iterrows():
-              log2fcs = [float(x) for x in rows["annotation_%s" %(pa["log2fc_column"])].split(', ')]
-              genes_up = sum(i > 0 for i in log2fcs)
-              genes_down = sum(i < 0 for i in log2fcs)
-              zscores.append((genes_up - genes_down) / np.sqrt(len(log2fcs)))
-            df["Z-score"] = zscores
-          else: 
-            return(None, None, "Please specify the log2fc column in the input data")
+          table_headers=df.columns.tolist()
+          if not "annotation_%s" %(int(pa["log2fc_column"])-1) in table_headers:
+            return(None, None, "wrong log2fc column index")
+          for index, rows in df.iterrows():
+            log2fcs = [float(x) for x in rows["annotation_%s" %(int(pa["log2fc_column"])-1)].split(', ')]
+            genes_up = sum(i > 0 for i in log2fcs)
+            genes_down = sum(i < 0 for i in log2fcs)
+            zscores.append((genes_up - genes_down) / np.sqrt(len(log2fcs)))
+          df["Z-score"] = zscores
     
     else:
         df=pd.DataFrame(columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"])
