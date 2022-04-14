@@ -215,6 +215,10 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
     except:
       return None, None, "Could not connect to DAVID. Server might be down."
     print("connected to server, checking user")
+    
+    if pa["user"] == None:
+      return(None, None, 'Please give in a register DAVID email in "Input" > "DAVID registered email". If you do not yet have a registered address you need to register with DAVID - https://david.ncifcrf.gov/webservice/register.htm. Please be aware that you will not receive any confirmation email.')
+
     client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
     try:
       client_auth = client.service.authenticate(user)
@@ -222,7 +226,8 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
       return None, None, "Could not connect to DAVID. Server might be down."
     
     if str(client_auth) == "Failed. For user registration, go to http://david.abcc.ncifcrf.gov/webservice/register.htm" :
-      return None, None, str(client_auth)
+      msg = "Failed. For user registration, go to https://david.ncifcrf.gov/webservice/register.htm"
+      return None, None, msg
     if verbose:
       print('User Authentication:', client_auth)
       sys.stdout.flush()
@@ -311,13 +316,16 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
 
         # c        
         zscores=[]
-        if zscore and not pa['log2fc_column'] == None:
-           for index, rows in df.iterrows():
-             log2fcs = [float(x) for x in rows["annotation_%s" %(pa["log2fc_column"])].split(', ')]
-             genes_up = sum(i > 0 for i in log2fcs)
-             genes_down = sum(i < 0 for i in log2fcs)
-             zscores.append((genes_up - genes_down) / np.sqrt(len(log2fcs)))
-           df["Z-score"] = zscores
+        if zscore: 
+          if not pa['log2fc_column'] == None:
+            for index, rows in df.iterrows():
+              log2fcs = [float(x) for x in rows["annotation_%s" %(pa["log2fc_column"])].split(', ')]
+              genes_up = sum(i > 0 for i in log2fcs)
+              genes_down = sum(i < 0 for i in log2fcs)
+              zscores.append((genes_up - genes_down) / np.sqrt(len(log2fcs)))
+            df["Z-score"] = zscores
+          else: 
+            return(None, None, "Please specify the log2fc column in the input data")
     
     else:
         df=pd.DataFrame(columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"])
