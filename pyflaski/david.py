@@ -75,7 +75,6 @@ def debug_david(user,DEBUG_GENES=DEBUG_GENES, ids=None):
 
 
 def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
-    print("HERE2")
 
     #database, categories, user, ids, ids_bg = None, name = '', name_bg = '', verbose = False, p = 0.1, n = 2):
     # Modified from https://david.ncifcrf.gov/content.jsp?file=WS.html
@@ -207,14 +206,13 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
     if ids_bg:
       ids_bg = ','.join([str(i) for i in ids_bg])
 
-    print("before connecting")
     ssl._create_default_https_context = ssl._create_unverified_context
     url = 'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl'
     try:
       client = sudsclient(url)
     except:
       return None, None, "Could not connect to DAVID. Server might be down."
-    print("connected to server, checking user")
+    # print("connected to server, checking user")
     
     if pa["user"] == None:
       return(None, None, 'Please give in a register DAVID email in "Input" > "DAVID registered email". If you do not yet have a registered address you need to register with DAVID - https://david.ncifcrf.gov/webservice/register.htm. Please be aware that you will not receive any confirmation email.')
@@ -231,7 +229,7 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
     if verbose:
       print('User Authentication:', client_auth)
       sys.stdout.flush()
-    print("user checks out")
+    # print("user checks out")
     # if ids_bg :
     #   size = client.service.addList(ids_bg, database, name, 0)
     #   if float(size) > float(0):
@@ -306,7 +304,12 @@ def run_david(pa, path_to_ensembl_maps="/flaski/data/david"):
 
         df.columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"]
         if zscore:
-          df["Z-score"] = np.NaN
+          try:
+            test=int(pa["log2fc_column"])
+            df["Z-score"] = np.NaN
+          except:
+            zscore=False
+
         # insert ensembl gene name to gene id here 
         
         if len(list(ids_map.keys())) > 0:
