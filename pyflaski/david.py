@@ -74,7 +74,7 @@ def debug_david(user,DEBUG_GENES=DEBUG_GENES, ids=None):
     return report
 
 
-def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data"):
+def run_david(pa, path_to_ensembl_maps="/myapp/data/david"):
 
     #database, categories, user, ids, ids_bg = None, name = '', name_bg = '', verbose = False, p = 0.1, n = 2):
     # Modified from https://david.ncifcrf.gov/content.jsp?file=WS.html
