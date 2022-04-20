@@ -17,7 +17,7 @@ def GET_COLOR(x):
         return str(x)
 
 def GET_COLORLIST(rgb,fillcolor,tmp,pa,pab):
-    if pa[rgb] != "":
+    if pa[rgb] != None:
         color=GET_COLOR(pa[rgb]).split(",")
     else:
         if pa[fillcolor]=="None":
@@ -52,12 +52,26 @@ def make_figure(df,pa):
     # MAIN FIGURE
     #Load checkboxes
     pab={}
-    for arg in ["show_legend","upper_axis","lower_axis","left_axis","right_axis",\
-        "tick_left_axis","tick_lower_axis","tick_upper_axis","tick_right_axis"]:
-        if pa[arg] in ["off",".off"]:
-            pab[arg]=False
+
+    if "show_legend" in pa["show_legend"]:
+        pab["show_legend"]=True
+    else:
+        pab["show_legend"]=False
+
+    for a in ["upper_axis","lower_axis","left_axis","right_axis"]:
+        if a in pa["show_axis"]:
+            pab[a]=True
         else:
-            pab[arg]=True
+            pab[a]=False
+
+    for a in ["tick_lower_axis", "tick_left_axis"]:
+        if a in pa["tick_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+    
+    pab["tick_upper_axis"] = False
+    pab["tick_right_axis"] = False
     
     #Load booleans
     booleans=[]
@@ -100,9 +114,11 @@ def make_figure(df,pa):
             pab[p]=pa[p]
 
     #MAIN BODY
+    print(pa["color_rgb"])
+    print(pa["color_value"])
     color=GET_COLORLIST("color_rgb","color_value",tmp,pa,pab)
 
-    if pa["labels"]!="":
+    if pa["labels"]!=None:
         labels=pa["labels"].split(",")
     else:
         if pa["labelcol"]=="None":
@@ -335,7 +351,7 @@ def figure_defaults():
 
     plot_arguments={"fig_width":"600.0",\
         "fig_height":"600.0",\
-        "title":'iDendrogram plot',\
+        "title":'Dendrogram plot',\
         "title_fontsize":"20",\
         "title_fontfamily":"Default",\
         "title_fontcolor":"None",\
@@ -379,8 +395,8 @@ def figure_defaults():
         "title_xanchors":STANDARD_TITLE_XANCHORS,\
         "title_yanchors":STANDARD_TITLE_YANCHORS,\
         "title_xanchor":"auto",\
-        "title_yanchor":"auto",\
-        "show_legend":".off",\
+        "title_yanchor":"top",\
+        "show_legend":"",\
         "axis_line_width":1.0,\
         "axis_line_color":"lightgrey",\
         "ticks_line_width":1.0,\
@@ -404,14 +420,8 @@ def figure_defaults():
         "label_fontcolor":"None",\
         "xlabels":"14",\
         "ylabels":"14",\
-        "left_axis":".on" ,\
-        "right_axis":".on",\
-        "upper_axis":".on",\
-        "lower_axis":".on",\
-        "tick_left_axis":".on" ,\
-        "tick_right_axis":".off",\
-        "tick_upper_axis":".off",\
-        "tick_lower_axis":".on",\
+        "show_axis":[],\
+        "tick_axis":[],\
         "ticks_direction":TICKS_DIRECTIONS,\
         "ticks_direction_value":TICKS_DIRECTIONS[1],\
         "ticks_length":"6.0",\
