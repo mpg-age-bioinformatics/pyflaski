@@ -114,8 +114,6 @@ def make_figure(df,pa):
             pab[p]=pa[p]
 
     #MAIN BODY
-    print(pa["color_rgb"])
-    print(pa["color_value"])
     color=GET_COLORLIST("color_rgb","color_value",tmp,pa,pab)
 
     if pa["labels"]!=None:
