@@ -44,3 +44,4 @@ openpyxl==3.0.9
 ### flaski3
 kaleido==0.2.1
 fuzzywuzzy==0.18.0
+python-Levenshtein==0.12.2
