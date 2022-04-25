@@ -16,12 +16,13 @@ def make_figure(df,pa):
         
     """
 
+
     pa_={}
     for n in ["fig_width","fig_height"]:
-        if pa[n] == "":
-            pa_[n]=None
-        else:
+        if pa[n]:
             pa_[n]=float(pa[n])
+        else:
+            pa_[n]=pa[n]
 
     fig = go.Figure( )
     fig.update_layout( width=pa_["fig_width"], height=pa_["fig_height"] ) #  autosize=False,
@@ -30,16 +31,50 @@ def make_figure(df,pa):
     # if we have groups
     # the user can decide how the diferent groups should look like 
     # by unchecking the groups_autogenerate check box
-    pab={}   
-    for arg in ["show_legend","x_axis","y_axis","z_axis","mirror_x_axis","mirror_y_axis","mirror_z_axis",\
-        "x_axis_reverse_color_scale","y_axis_reverse_color_scale","z_axis_reverse_color_scale","x_tick_labels","y_tick_labels","z_tick_labels"]:
-        if pa[arg] in ["off",".off"]:
-            pab[arg]=False
-        else:
-            pab[arg]=True
+    pab={}
+    
+    if "show_legend" in pa["show_legend"]:
+        pab["show_legend"]=True
+    else:
+        pab["show_legend"]=False
 
-    if pa["ticks_direction_value"] == "None":
-        pa["ticks_direction_value"] = ""
+
+    if "x_axis_reverse_color_scale" in pa["x_axis_reverse_color_scale"]:
+        pab["x_axis_reverse_color_scale"]=True
+    else:
+        pab["x_axis_reverse_color_scale"]=False
+
+
+    if "y_axis_reverse_color_scale" in pa["y_axis_reverse_color_scale"]:
+        pab["y_axis_reverse_color_scale"]=True
+    else:
+        pab["y_axis_reverse_color_scale"]=False
+
+
+    if "z_axis_reverse_color_scale" in pa["z_axis_reverse_color_scale"]:
+        pab["z_axis_reverse_color_scale"]=True
+    else:
+        pab["z_axis_reverse_color_scale"]=False
+
+
+    for a in ["x_axis","y_axis","z_axis"]:
+        if a in pa["show_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
+    for a in ["mirror_x_axis", "mirror_y_axis", "mirror_z_axis"]:
+        if a in pa["show_mirror_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
+    for a in ["x_tick_labels","y_tick_labels", "z_tick_labels"]:
+        if a in pa["tick_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
 
 
     if pa["labels_col_value"] != "select a column..":
@@ -499,25 +534,25 @@ def figure_defaults():
         "groups_value":"None",\
         "list_of_groups":[],\
         "groups_settings":[],\
-        "show_legend":".on",\
+        "show_legend":"show_legend",\
         "legend_title":"",\
         "legend_font_size":"14",\
         "markerstyles":ALLOWED_MARKERS,\
         "marker":"circle",\
-        "markerstyles_cols":["select a column.."],\
-        "markerstyles_col":"select a column..",\
+        "markerstyles_cols":["or select a column.."],\
+        "markerstyles_col":"or select a column..",\
         "marker_size":STANDARD_SIZES,\
         "markers":"4",\
-        "markersizes_cols":["select a column.."],\
-        "markersizes_col":"select a column..",\
+        "markersizes_cols":["or select a column.."],\
+        "markersizes_col":"or select a column..",\
         "marker_color":STANDARD_COLORS,\
         "markerc":"black",\
         "markerc_write":"",\
-        "markerc_cols":["select a column.."],\
-        "markerc_col":"select a column..",\
+        "markerc_cols":["or select a column.."],\
+        "markerc_col":"or select a column..",\
         "marker_alpha":"1",\
-        "markeralpha_col":["select a column.."],\
-        "markeralpha_col_value":"select a column..",\
+        "markeralpha_col":["or select a column.."],\
+        "markeralpha_col_value":"or select a column..",\
         "edge_colors":STANDARD_COLORS,\
         "edgecolor":"black",\
         "edgecolor_cols":["select a column.."],\
@@ -550,16 +585,19 @@ def figure_defaults():
         "zlabel_size":STANDARD_SIZES,\
         "zlabels":"14",\
         "axis_line_width":"1.0",\
-        "x_axis":".on" ,\
-        "y_axis":".on",\
-        "z_axis":".on",\
-        "mirror_x_axis":".on" ,\
-        "mirror_y_axis":".on",\
-        "mirror_z_axis":".on",\
-        #"lower_axis":".on",\
-        "x_tick_labels":".on",\
-        "y_tick_labels":".on",\
-        "z_tick_labels":".on",\
+        # "x_axis":".on" ,\
+        # "y_axis":".on",\
+        # "z_axis":".on",\
+        # "mirror_x_axis":".on" ,\
+        # "mirror_y_axis":".on",\
+        # "mirror_z_axis":".on",\
+        # #"lower_axis":".on",\
+        # "x_tick_labels":".on",\
+        # "y_tick_labels":".on",\
+        # "z_tick_labels":".on",\
+        "show_axis":["x_axis","y_axis","z_axis"],\
+        'show_mirror_axis':["mirror_x_axis", "mirror_y_axis", "mirror_z_axis"],\
+        "tick_axis":["x_tick_labels","y_tick_labels", "z_tick_labels"],\
         "ticks_direction":TICKS_DIRECTIONS,\
         "ticks_direction_value":TICKS_DIRECTIONS[1],\
         "ticks_length":"6.0",\
@@ -590,7 +628,7 @@ def figure_defaults():
         "plane_colors":PLANE_COLORS,\
         "x_axis_plane":"",\
         "x_axis_plane_color_value":"blues",\
-        "x_axis_reverse_color_scale":".off",\
+        "x_axis_reverse_color_scale":"",\
         "x_plane_lower_color":"",\
         "x_plane_upper_color":"",\
         "x_axis_plane_color_opacity":"0.1",\
@@ -599,7 +637,7 @@ def figure_defaults():
         "x_axis_background_color_text":"",\
         "y_axis_plane":"",\
         "y_axis_plane_color_value":"blues",\
-        "y_axis_reverse_color_scale":".off",\
+        "y_axis_reverse_color_scale":"",\
         "y_plane_lower_color":"",\
         "y_plane_upper_color":"",\
         "y_axis_plane_color_opacity":"0.1",\
@@ -608,7 +646,7 @@ def figure_defaults():
         "y_axis_background_color_text":"",\
         "z_axis_plane":"",\
         "z_axis_plane_color_value":"blues",\
-        "z_axis_reverse_color_scale":".off",\
+        "z_axis_reverse_color_scale":"",\
         "z_plane_lower_color":"",\
         "z_plane_upper_color":"",\
         "z_axis_plane_color_opacity":"0.1",\
