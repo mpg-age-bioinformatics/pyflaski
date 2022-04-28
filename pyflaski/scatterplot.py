@@ -16,7 +16,7 @@ def make_figure(df,pa):
         A Plotly figure
         
     """
-
+    
     pa_={}
     for n in ["fig_width","fig_height"]:
         if pa[n]:
@@ -156,6 +156,8 @@ def make_figure(df,pa):
             x=tmp[pa["xvals"]].tolist()
             y=tmp[pa["yvals"]].tolist()
             text=tmp["___label___"].tolist()
+            high=None
+            low=None
 
 
             if pa["markeralpha_col_value"] :
@@ -164,16 +166,67 @@ def make_figure(df,pa):
                 a=float(pa["marker_alpha"])
             
             if pa["markersizes_col"]:
+                # map here the sizes to a different range
                 s=[ float(i) for i in tmp[pa["markersizes_col"]].tolist() ]
+                if pa['lower_size_value'] != "" and pa['upper_size_value'] != "":
+                    s=[np.interp(i,[float(pa['lower_size_value']), float(pa['upper_size_value'])],[float(pa['lower_size']), float(pa['upper_size'])]) for i in s]
             else:
                 s=float(pa["markers"])
 
             if pa["markerc_col"]:
-                c=tmp[pa["markerc_col"]].tolist()
+                c=[ float(i) for i in tmp[pa["markerc_col"]].tolist() ]
+                # if value range is set
+                if pa["lower_value"] != "":
+                    low=float(pa["lower_value"])
+                else:
+                    low=min(c)
+                if pa["upper_value"] != "":
+                    high=float(pa["upper_value"])
+                else:
+                    high=max(c)
             elif pa["markerc_write"]:
                 c=pa["markerc_write"]
             else:
                 c=pa["markerc"]
+            
+            if "reverse_color_scale" in pa["reverse_color_scale"]:
+                pab["reverse_color_scale"]=True
+            else:
+                pab["reverse_color_scale"]=False
+
+            if pab["reverse_color_scale"]:
+                pa_["colorscale_value"]=pa["colorscale_value"]+"_r"
+            else:
+                pa_["colorscale_value"]=pa["colorscale_value"]
+
+            selfdefined_cmap=True
+            for value in ["lower_color","center_color","upper_color"]:
+                if pa[value]=="":
+                    selfdefined_cmap=False
+                    break
+            if selfdefined_cmap:
+                given_values=True
+                for value in ["lower_value","center_value","upper_value"]:
+                    if pa[value]=="":
+                        given_values=False
+                        break
+                
+                if given_values:
+                    low=float(pa["lower_value"])
+                    high=float(pa["upper_value"])
+
+                    range_diff=float(pa["upper_value"]) - float(pa["lower_value"])
+                    center=float(pa["center_value"]) - float(pa["lower_value"])
+                    center=center/range_diff
+                    
+                else:
+                    range_diff=high - low
+                    center=( (high-low)/2+low ) - low
+                    center=center/range_diff
+
+                pa_["colorscale_value"]=[ [0, pa["lower_color"]],\
+                    [center, pa["center_color"]],\
+                    [1, pa["upper_color"] ]]
 
             if pa["edgecolor_col"]:
                 edgecolor=tmp[[pa["edgecolor_col"]]].dropna()[pa["edgecolor_col"]].tolist()
@@ -195,6 +248,9 @@ def make_figure(df,pa):
                     color=c,
                     size=s,
                     opacity=a,
+                    cmax=high,
+                    cmin=low,
+                    colorscale=pa_["colorscale_value"],
                     line=dict(
                         color=edgecolor,
                         width=edge_linewidth
@@ -446,6 +502,8 @@ def figure_defaults():
         "markers":"4",\
         "markersizes_cols":[],\
         "markersizes_col":None,\
+        "min_markersize":0,\
+        "max_markersize":5,\
         "marker_color":STANDARD_COLORS,\
         "markerc":"black",\
         "markerc_write":None,\
@@ -454,6 +512,30 @@ def figure_defaults():
         "marker_alpha":"1",\
         "markeralpha_col":[],\
         "markeralpha_col_value":None,\
+        "colorscale":['aggrnyl','agsunset','blackbody','bluered','blues','blugrn','bluyl','brwnyl',\
+                    'bugn','bupu','burg','burgyl','cividis','darkmint','electric','emrld','gnbu',\
+                    'greens','greys','hot','inferno','jet','magenta','magma','mint','orrd','oranges',\
+                    'oryel','peach','pinkyl','plasma','plotly3','pubu','pubugn','purd','purp','purples',\
+                    'purpor','rainbow','rdbu','rdpu','redor','reds','sunset','sunsetdark','teal',\
+                    'tealgrn','viridis','ylgn','ylgnbu','ylorbr','ylorrd','algae','amp','deep','dense',\
+                    'gray','haline','ice','matter','solar','speed','tempo','thermal','turbid','armyrose',\
+                    'brbg','earth','fall','geyser','prgn','piyg','picnic','portland','puor','rdgy',\
+                    'rdylbu','rdylgn','spectral','tealrose','temps','tropic','balance','curl','delta',\
+                        'edge','hsv','icefire','phase','twilight','mrybm','mygbm'],\
+        "colorscale_value":"blues",\
+        "reverse_color_scale":"",\
+        "lower_value":"",\
+        "center_value":"",\
+        "upper_value":"",\
+        "lower_color":"",\
+        "center_color":"",\
+        "upper_color":"",\
+        "lower_size_value":"",\
+        "center_size_value":"",\
+        "upper_size_value":"",\
+        "lower_size":"",\
+        "center_size":"",\
+        "upper_size":"",\
         "edge_colors":STANDARD_COLORS,\
         "edgecolor":"black",\
         "edgecolor_cols":[],\

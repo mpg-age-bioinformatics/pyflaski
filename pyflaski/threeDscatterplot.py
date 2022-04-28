@@ -76,8 +76,7 @@ def make_figure(df,pa):
             pab[a]=False
 
 
-
-    if pa["labels_col_value"] != "select a column..":
+    if pa["labels_col_value"] != None:
         df["___label___"]=df[pa["labels_col_value"]].tolist()
     else:
         df["___label___"]=df.index.tolist()
@@ -151,7 +150,7 @@ def make_figure(df,pa):
 
     
     elif pa["groups_value"]=="None":
-
+        print("no groups selected")
         if pa["markerstyles_col"] != "select a column..":
             markers=[ str(i) for i in df[pa["markerstyles_col"]].tolist() ]
             df["__marker__"]=markers
