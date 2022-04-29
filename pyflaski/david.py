@@ -307,6 +307,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/data/david"):
           try:
             test=int(pa["log2fc_column"])
             df["Z-score"] = np.NaN
+            df["mean log2 FC"] = np.NaN
           except:
             zscore=False
 
@@ -319,6 +320,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/data/david"):
 
         # c        
         zscores=[]
+        meanlog2fc=[]
         if zscore: 
           table_headers=df.columns.tolist()
           if not "annotation_%s" %(int(pa["log2fc_column"])-1) in table_headers:
@@ -328,7 +330,9 @@ def run_david(pa, path_to_ensembl_maps="/myapp/data/david"):
             genes_up = sum(i > 0 for i in log2fcs)
             genes_down = sum(i < 0 for i in log2fcs)
             zscores.append((genes_up - genes_down) / np.sqrt(len(log2fcs)))
+            meanlog2fc.append(np.mean(log2fcs))
           df["Z-score"] = zscores
+          df["mean log2 FC"] = meanlog2fc
     
     else:
         df=pd.DataFrame(columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"])

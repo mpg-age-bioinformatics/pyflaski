@@ -38,6 +38,11 @@ def make_figure(df,pa):
     else:
         pab["show_legend"]=False
 
+    if "color_legend" in pa["color_legend"]:
+        pab["color_legend"]=True
+    else:
+        pab["color_legend"]=False
+
     for a in ["upper_axis","lower_axis","left_axis","right_axis"]:
         if a in pa["show_axis"]:
             pab[a]=True
@@ -251,12 +256,15 @@ def make_figure(df,pa):
                     cmax=high,
                     cmin=low,
                     colorscale=pa_["colorscale_value"],
+                    colorbar={"title":{"text":pa['colorscaleTitle']}, },
                     line=dict(
                         color=edgecolor,
                         width=edge_linewidth
                         )),\
                 showlegend=False,
-                name="" ) )
+                name="" ))
+            if pa["markerc_col"] != 'None':
+                fig.update_traces(marker_showscale=pab["color_legend"])
 
     if  ( not pab["lower_axis"] ) & ( pab["upper_axis"] ) :
         fig.update_layout(xaxis={'side': 'top'})
@@ -536,6 +544,8 @@ def figure_defaults():
         "lower_size":"",\
         "center_size":"",\
         "upper_size":"",\
+        'color_legend':'',\
+        'colorscaleTitle':"",\
         "edge_colors":STANDARD_COLORS,\
         "edgecolor":"black",\
         "edgecolor_cols":[],\
