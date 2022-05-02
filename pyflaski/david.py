@@ -305,9 +305,11 @@ def run_david(pa, path_to_ensembl_maps="/myapp/data/david"):
         df.columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"]
         if zscore:
           try:
+            # check if log2fc column is given in input, otherwise don't calculate z-scores
             test=int(pa["log2fc_column"])
             df["Z-score"] = np.NaN
             df["mean log2 FC"] = np.NaN
+            df["-log10 (pvalue)"] = np.NaN
           except:
             zscore=False
 
@@ -333,6 +335,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/data/david"):
             meanlog2fc.append(np.mean(log2fcs))
           df["Z-score"] = zscores
           df["mean log2 FC"] = meanlog2fc
+          df["-log10 (pvalue)"] = -np.log10([float(x) for x in df["PValue"]])
     
     else:
         df=pd.DataFrame(columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"])
