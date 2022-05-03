@@ -252,28 +252,28 @@ def make_figure(df,pa):
         ),
     ))
 
-    if (pa["x_lower_limit"]!="") and (pa["x_upper_limit"]!="") :
+    if (pa["x_lower_limit"]!=None) and (pa["x_upper_limit"]!=None) :
         xmin=float(pa["x_lower_limit"])
         xmax=float(pa["x_upper_limit"])
         fig.update_layout(scene = dict(xaxis = dict(range=[xmin, xmax])))
 
-    if (pa["y_lower_limit"]!="") and (pa["y_upper_limit"]!="") :
+    if (pa["y_lower_limit"]!=None) and (pa["y_upper_limit"]!=None) :
         ymin=float(pa["y_lower_limit"])
         ymax=float(pa["y_upper_limit"])
         fig.update_layout(scene = dict(yaxis = dict(range=[ymin, ymax])))
 
-    if (pa["z_lower_limit"]!="") and (pa["z_upper_limit"]!="") :
+    if (pa["z_lower_limit"]!=None) and (pa["z_upper_limit"]!=None) :
         zmin=float(pa["z_lower_limit"])
         zmax=float(pa["z_upper_limit"])
         fig.update_layout(scene = dict(zaxis = dict(range=[zmin, zmax])))
 
-    if pa["maxxticks"]!="":
+    if pa["maxxticks"]!=None:
         fig.update_layout(scene = (dict(xaxis = dict(nticks=int(pa["maxxticks"])))))
 
-    if pa["maxyticks"]!="":
+    if pa["maxyticks"]!=None:
         fig.update_layout(scene = (dict(yaxis = dict(nticks=int(pa["maxyticks"])))))
 
-    if pa["maxzticks"]!="":
+    if pa["maxzticks"]!=None:
         fig.update_layout(scene = (dict(zaxis = dict(nticks=int(pa["maxzticks"])))))
     
     fig.update_layout(
@@ -358,53 +358,54 @@ def make_figure(df,pa):
 
     fig.update_layout(template='plotly_white')
 
-    if (pa["labels_col_value"] != "select a column..") & (len(pa["fixed_labels"])>0):
-        if pa["labels_arrows_value"] == "None":
-            showarrow=False
-            arrowhead=0
-            standoff=0
-            yshift=10
-        else:
-            showarrow=True
-            arrowhead=int(pa["labels_arrows_value"])
-            standoff=4
-            yshift=0
-        tmp=df[df["___label___"].isin( pa["fixed_labels"]  )]
-            
-        x_values=tmp[pa["xvals"]].tolist()
-        y_values=tmp[pa["yvals"]].tolist()
-        z_values=tmp[pa["zvals"]].tolist()
-        text_values=tmp["___label___"].tolist()
+    if (pa["labels_col_value"] != None) & (pa["fixed_labels"] != None):
+        if (len(pa["fixed_labels"])>0):
+            if pa["labels_arrows_value"] == "None":
+                showarrow=False
+                arrowhead=0
+                standoff=0
+                yshift=10
+            else:
+                showarrow=True
+                arrowhead=int(pa["labels_arrows_value"])
+                standoff=4
+                yshift=0
+            tmp=df[df["___label___"].isin( pa["fixed_labels"]  )]
+                
+            x_values=tmp[pa["xvals"]].tolist()
+            y_values=tmp[pa["yvals"]].tolist()
+            z_values=tmp[pa["zvals"]].tolist()
+            text_values=tmp["___label___"].tolist()
 
-        annotations=[]
-        for x,y,z,text in zip(x_values,y_values,z_values,text_values):
-            ann=dict(x=x,
-                    y=y,
-                    z=z,
-                    text=text,
-                    showarrow=showarrow,
-                    arrowhead=arrowhead,
-                    #clicktoshow="onoff",
-                    visible=True,
-                    standoff=standoff,
-                    yshift=yshift,
-                    opacity=float(pa["labels_alpha"]),
-                    arrowwidth=float(pa["labels_line_width"]),
-                    arrowcolor=pa["labels_colors_value"],
-                    font=dict(
-                        size=float(pa["labels_font_size"]),
-                        color=pa["labels_font_color_value"]) 
-                    )
-            annotations.append(ann)
+            annotations=[]
+            for x,y,z,text in zip(x_values,y_values,z_values,text_values):
+                ann=dict(x=x,
+                        y=y,
+                        z=z,
+                        text=text,
+                        showarrow=showarrow,
+                        arrowhead=arrowhead,
+                        #clicktoshow="onoff",
+                        visible=True,
+                        standoff=standoff,
+                        yshift=yshift,
+                        opacity=float(pa["labels_alpha"]),
+                        arrowwidth=float(pa["labels_line_width"]),
+                        arrowcolor=pa["labels_colors_value"],
+                        font=dict(
+                            size=float(pa["labels_font_size"]),
+                            color=pa["labels_font_color_value"]) 
+                        )
+                annotations.append(ann)
 
-        fig.update_layout(scene=dict(annotations=annotations))
-            
-        #fig.update_traces(textposition='top center')
-    
-    if pa["x_axis_plane"] != "":
+            fig.update_layout(scene=dict(annotations=annotations))
+                
+            #fig.update_traces(textposition='top center')
+    print(pa["x_axis_plane"])
+    if pa["x_axis_plane"] != None:
         selfdefined_cmap=True
         for value in ["x_plane_lower_color","x_plane_upper_color"]:
-            if pa[value]=="":
+            if pa[value]==None:
                 selfdefined_cmap=False
                 break
 
@@ -429,11 +430,10 @@ def make_figure(df,pa):
         fig.add_trace(go.Surface(x=x_.apply(lambda x: float(pa["x_axis_plane"])), y=y_, z = np.array([z_]*length_data),\
                             showscale=False, colorscale=xplane_color, opacity=float(pa["x_axis_plane_color_opacity"])))
 
-
-    if pa["y_axis_plane"] != "":
+    if pa["y_axis_plane"] != None:
         selfdefined_cmap=True
         for value in ["y_plane_lower_color","y_plane_upper_color"]:
-            if pa[value]=="":
+            if pa[value]==None:
                 selfdefined_cmap=False
                 break
             
@@ -457,10 +457,10 @@ def make_figure(df,pa):
         fig.add_trace(go.Surface(x=x_, y= y_.apply(lambda x: float(pa["y_axis_plane"])), z =  np.array([z]*length_data).transpose(),\
                         colorscale=yplane_color, showscale=False, opacity=float(pa["y_axis_plane_color_opacity"])))
         
-    if pa["z_axis_plane"] != "":
+    if pa["z_axis_plane"] != None:
         selfdefined_cmap=True
         for value in ["z_plane_lower_color","z_plane_upper_color"]:
-            if pa[value]=="":
+            if pa[value]==None:
                 selfdefined_cmap=False
                 break
 
