@@ -38,7 +38,6 @@ def make_figure(df,pa):
     else:
         pab["show_legend"]=False
 
-
     if "x_axis_reverse_color_scale" in pa["x_axis_reverse_color_scale"]:
         pab["x_axis_reverse_color_scale"]=True
     else:
@@ -81,8 +80,8 @@ def make_figure(df,pa):
     else:
         df["___label___"]=df.index.tolist()
 
-    if str(pa["groups_value"])!="None":
 
+    if str(pa["groups_value"])!="None":
         fig.update_layout(legend_title_text=str(pa["groups_value"]), legend=dict( title_font_color="black", font=dict( size=float(pa["legend_font_size"]), color="black" ) ) )
         
         for group in pa["list_of_groups"]:
@@ -94,41 +93,39 @@ def make_figure(df,pa):
             text=tmp["___label___"].tolist()
             
             pa_=[ g for g in pa["groups_settings"] if g["name"]==group ][0]
-            
-            if pa_["markeralpha_col_value"] != "select a column..":
+            if (pa_["markeralpha_col_value"] != "or select a column..") and (pa_["markeralpha_col_value"] != None):
                 a=[ float(i) for i in tmp[[pa_["markeralpha_col_value"]]].dropna()[pa_["markeralpha_col_value"]].tolist() ][0]
             else:
                 a=float(pa_["marker_alpha"])
 
-            if pa_["markerstyles_col"] != "select a column..":
+            if (pa_["markerstyles_col"] != "or select a column..") and (pa_["markerstyles_col"] != None):
                 marker=[ str(i) for i in tmp[[pa_["markerstyles_col"]]].dropna()[pa_["markerstyles_col"]].tolist() ][0]
             else:
                 marker=pa_["marker"]
 
-            if pa_["markersizes_col"] != "select a column..":
+            if (pa_["markersizes_col"] != "or select a column..") and (pa_["markersizes_col"] != None):
                 s=[ float(i) for i in tmp[[pa_["markersizes_col"]]].dropna()[pa_["markersizes_col"]].tolist() ][0]
             else:
                 s=float(pa_["markers"])
 
-            if pa_["markerc_col"] != "select a column..":
+            if (pa_["markerc_col"] != "or select a column..") and (pa_["markerc_col"] != None):
                 c=[ i for i in tmp[[pa_["markerc_col"]]].dropna()[pa_["markerc_col"]].tolist()][0]
-            elif str(pa["markerc_write"]) != "":
+            elif str(pa_["markerc_write"]) != "":
                 c=pa_["markerc_write"]
             else:
                 c=pa_["markerc"]
 
+            # if (pa_["edgecolor_col"] != "or select a column..") and (pa_["edgecolor_col"] != None):
+            #     edgecolor=[ i for i in tmp[[pa_["edgecolor_col"]]].dropna()[pa_["edgecolor_col"]].tolist()][0]
+            # elif str(pa_["edgecolor_write"]) != "":
+            #     edgecolor=pa_["edgecolor_write"]
+            # else:
+            #     edgecolor=pa_["edgecolor"]
 
-            if pa_["edgecolor_col"] != "select a column..":
-                edgecolor=[ i for i in tmp[[pa_["edgecolor_col"]]].dropna()[pa_["edgecolor_col"]].tolist()][0]
-            elif str(pa_["edgecolor_write"]) != "":
-                edgecolor=pa_["edgecolor_write"]
-            else:
-                edgecolor=pa_["edgecolor"]
-
-            if pa_["edge_linewidth_col"] != "select a column..":
-                edge_linewidth=[ float(i) for i in tmp[[pa_["edge_linewidth_col"]]].dropna()[pa_["edge_linewidth_col"]].tolist() ][0]
-            else:
-                edge_linewidth=float(pa_["edge_linewidth"])
+            # if (pa_["edge_linewidth_col"] != "or select a column..") and (pa_["edge_linewidth_col"] != None):
+            #     edge_linewidth=[ float(i) for i in tmp[[pa_["edge_linewidth_col"]]].dropna()[pa_["edge_linewidth_col"]].tolist() ][0]
+            # else:
+            #     edge_linewidth=float(pa_["edge_linewidth"])
 
             # https://plotly.com/python/line-and-scatter/
             # https://plotly.com/python/marker-style/
@@ -139,24 +136,24 @@ def make_figure(df,pa):
                     color=c,
                     size=s,
                     opacity=a,
-                    line=dict(
-                        color=edgecolor,
-                        width=edge_linewidth
-                        )),\
+                    # line=dict(
+                    #     color=edgecolor,
+                    #     width=edge_linewidth
+                    #     )
+                    ),\
                 showlegend=pab["show_legend"],\
                 name=group) )
 
         fig.update_layout(legend_title_text=pa["legend_title"], legend=dict( font=dict( size=float(pa["legend_font_size"]), color="black" ) ) )
 
     
-    elif pa["groups_value"]=="None":
-        print("no groups selected")
-        if pa["markerstyles_col"] != "select a column..":
+    elif str(pa["groups_value"])=="None":
+        if (pa["markerstyles_col"] != "or select a column..") and (pa["markerstyles_col"] != None):
             markers=[ str(i) for i in df[pa["markerstyles_col"]].tolist() ]
             df["__marker__"]=markers
         else:
             df["__marker__"]=pa["marker"]
-    
+
         for marker in list(OrderedDict.fromkeys(df["__marker__"].tolist())):
 
             tmp=df[df["__marker__"]==marker]
@@ -166,31 +163,31 @@ def make_figure(df,pa):
             text=tmp["___label___"].tolist()
 
 
-            if pa["markeralpha_col_value"] != "select a column..":
+            if (pa["markeralpha_col_value"] != "or select a column..") and (pa["markeralpha_col_value"] != None):
                 a=[ float(i) for i in tmp[[pa["markeralpha_col_value"]]].dropna()[pa["markeralpha_col_value"]].tolist() ][0]
             else:
                 a=float(pa["marker_alpha"])
-            
-            if pa["markersizes_col"] != "select a column..":
+            if (pa["markersizes_col"] != "or select a column..") and (pa["markersizes_col"] != None) :
                 s=[ float(i) for i in tmp[pa["markersizes_col"]].tolist() ]
             else:
                 s=float(pa["markers"])
 
-            if pa["markerc_col"] != "select a column..":
+            if (pa["markerc_col"] != "or select a column..") and (pa["markerc_col"] != None):
                 c=tmp[pa["markerc_col"]].tolist()
             elif str(pa["markerc_write"]) != "":
                 c=pa["markerc_write"]
             else:
                 c=pa["markerc"]
+            
 
-            if pa["edgecolor_col"] != "select a column..":
+            if (pa["edgecolor_col"] != "or select a column..") and (pa["edgecolor_col"] != None):
                 edgecolor=tmp[[pa["edgecolor_col"]]].dropna()[pa["edgecolor_col"]].tolist()
             elif str(pa["edgecolor_write"]) != "":
                 edgecolor=pa["edgecolor_write"]
             else:
                 edgecolor=pa["edgecolor"]
 
-            if pa["edge_linewidth_col"] != "select a column..":
+            if (pa["edge_linewidth_col"] != "or select a column..") and (pa["edge_linewidth_col"] != None):
                 edge_linewidth=[ float(i) for i in tmp[[pa["edge_linewidth_col"]]].dropna()[pa["edge_linewidth_col"]].tolist() ][0]
             else:
                 edge_linewidth=float(pa["edge_linewidth"])
@@ -216,6 +213,7 @@ def make_figure(df,pa):
     #fig.update_xaxes(ticks=pa["ticks_direction_value"], tickwidth=float(pa["axis_line_width"]), tickcolor='black', ticklen=float(pa["ticks_length"]) )
     #fig.update_yaxes(ticks=pa["ticks_direction_value"], tickwidth=float(pa["axis_line_width"]), tickcolor='black', ticklen=float(pa["ticks_length"]) )
 
+
     fig.update_layout( scene = dict(
         xaxis = dict(
             zeroline = False, 
@@ -226,7 +224,7 @@ def make_figure(df,pa):
             ticks = pa["ticks_direction_value"], 
             tickwidth = float(pa["axis_line_width"]), 
             tickcolor = 'black', 
-            ticklen = float(pa["ticks_length"]) 
+            ticklen = float(pa["ticks_length"])
             ),
         yaxis = dict(
             zeroline = False, 
@@ -333,7 +331,7 @@ def make_figure(df,pa):
         #fig.update_xaxes(showgrid=False)
         #fig.update_yaxes(showgrid=False)
 
-    if pa["x_axis_background_color_text"] != "":
+    if pa["x_axis_background_color_text"] != "" and pa["x_axis_background_color_text"] != None :
         x_bg_color=pa["x_axis_background_color_text"]
     else:
         x_bg_color=pa["x_axis_background_color"]
@@ -341,15 +339,15 @@ def make_figure(df,pa):
     fig.update_layout(scene = dict(xaxis = dict(backgroundcolor = x_bg_color,)))
 
 
-    if pa["y_axis_background_color_text"] != "":
+    if pa["y_axis_background_color_text"] != "" and pa["y_axis_background_color_text"] != None :
         y_bg_color=pa["y_axis_background_color_text"]
     else:
         y_bg_color=pa["y_axis_background_color"]
-        
+
+       
     fig.update_layout(scene = dict(yaxis = dict(backgroundcolor = y_bg_color,)))
 
-
-    if pa["z_axis_background_color_text"] != "":
+    if pa["z_axis_background_color_text"] != "" and pa["z_axis_background_color_text"] != None :
         z_bg_color=pa["z_axis_background_color_text"]
     else:
         z_bg_color=pa["z_axis_background_color"]
@@ -401,22 +399,22 @@ def make_figure(df,pa):
             fig.update_layout(scene=dict(annotations=annotations))
                 
             #fig.update_traces(textposition='top center')
-    print(pa["x_axis_plane"])
+
     if pa["x_axis_plane"] != None:
-        selfdefined_cmap=True
+        selfdefined_x_cmap=True
         for value in ["x_plane_lower_color","x_plane_upper_color"]:
-            if pa[value]==None:
-                selfdefined_cmap=False
+            if pa[value]==None or pa[value] == "":
+                selfdefined_x_cmap=False
                 break
 
-        if selfdefined_cmap:
+        if selfdefined_x_cmap:
             color_continuous_scale=[ [0, pa["x_plane_lower_color"]], [1, pa["x_plane_upper_color"]] ]
             xplane_color=color_continuous_scale
         else:
             xplane_color=pa["x_axis_plane_color_value"]
 
         
-        if pab["x_axis_reverse_color_scale"]:
+        if pab["x_axis_reverse_color_scale"] and not selfdefined_x_cmap:
             xplane_color=xplane_color+"_r"
         
         tmp=df
@@ -431,19 +429,19 @@ def make_figure(df,pa):
                             showscale=False, colorscale=xplane_color, opacity=float(pa["x_axis_plane_color_opacity"])))
 
     if pa["y_axis_plane"] != None:
-        selfdefined_cmap=True
+        selfdefined_y_cmap=True
         for value in ["y_plane_lower_color","y_plane_upper_color"]:
-            if pa[value]==None:
-                selfdefined_cmap=False
+            if pa[value]==None or pa[value] == "":
+                selfdefined_y_cmap=False
                 break
             
-        if selfdefined_cmap:
+        if selfdefined_y_cmap:
             color_continuous_scale=[ [0, pa["y_plane_lower_color"]], [1, pa["y_plane_upper_color"]] ]
             yplane_color=color_continuous_scale
         else:
             yplane_color=pa["y_axis_plane_color_value"]
         
-        if pab["y_axis_reverse_color_scale"]:
+        if pab["y_axis_reverse_color_scale"] and not selfdefined_y_cmap:
             yplane_color=yplane_color+"_r"
             
         tmp=df
@@ -458,20 +456,24 @@ def make_figure(df,pa):
                         colorscale=yplane_color, showscale=False, opacity=float(pa["y_axis_plane_color_opacity"])))
         
     if pa["z_axis_plane"] != None:
-        selfdefined_cmap=True
+        selfdefined_z_cmap=True
+        print(pa["z_plane_lower_color"])
+        print(pa["z_plane_upper_color"])
         for value in ["z_plane_lower_color","z_plane_upper_color"]:
-            if pa[value]==None:
-                selfdefined_cmap=False
+            if pa[value]==None or pa[value] == "":
+                selfdefined_z_cmap=False
                 break
 
-        if selfdefined_cmap:
+        if selfdefined_z_cmap:
             color_continuous_scale=[ [0, pa["z_plane_lower_color"]], [1, pa["z_plane_upper_color"]] ]
             zplane_color=color_continuous_scale
+        else:
+            zplane_color=pa["z_axis_plane_color_value"]
         
-            
-        if pab["z_axis_reverse_color_scale"]:
+           
+        if pab["z_axis_reverse_color_scale"] and not selfdefined_z_cmap:
             zplane_color=zplane_color+"_r"
-            
+        
         tmp=df
         x_=tmp[pa["xvals"]]
         y_=tmp[pa["yvals"]]
@@ -554,17 +556,17 @@ def figure_defaults():
         "markeralpha_col_value":"or select a column..",\
         "edge_colors":STANDARD_COLORS,\
         "edgecolor":"black",\
-        "edgecolor_cols":["select a column.."],\
-        "edgecolor_col":"select a column..",\
+        "edgecolor_cols":["or select a column.."],\
+        "edgecolor_col":"or select a column..",\
         "edgecolor_write":"",\
-        "edge_linewidth_cols":["select a column.."],\
-        "edge_linewidth_col":"select a column..",\
+        "edge_linewidth_cols":["or select a column.."],\
+        "edge_linewidth_col":"or select a column..",\
         "edge_linewidths":STANDARD_SIZES,\
         "edge_linewidth":"0",\
         "available_labels":[],\
         "fixed_labels":[],\
-        "labels_col":["select a column.."],\
-        "labels_col_value":"select a column..",\
+        "labels_col":["or select a column.."],\
+        "labels_col_value":"or select a column..",\
         "labels_font_size":"10",\
         "labels_font_color":STANDARD_COLORS ,\
         "labels_font_color_value":"black",\
