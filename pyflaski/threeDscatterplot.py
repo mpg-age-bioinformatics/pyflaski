@@ -457,8 +457,6 @@ def make_figure(df,pa):
         
     if pa["z_axis_plane"] != None:
         selfdefined_z_cmap=True
-        print(pa["z_plane_lower_color"])
-        print(pa["z_plane_upper_color"])
         for value in ["z_plane_lower_color","z_plane_upper_color"]:
             if pa[value]==None or pa[value] == "":
                 selfdefined_z_cmap=False
