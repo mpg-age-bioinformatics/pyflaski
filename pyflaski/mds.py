@@ -5,10 +5,21 @@ from sklearn.manifold import MDS
 from sklearn import preprocessing
 
 def make_figure(df,pa):
+    pab = dict()
+    if "groups" in pa["groups"]:
+        pab["groups"]=True
+    else:
+        pab["groups"]=False
+
+
     df_mds=df.copy()
     df_mds.index=df_mds[pa["xvals"]].tolist()
     df_mds=df_mds[pa["yvals"]]
-
+    # include a group row
+    if pab["groups"]:
+        groups = df_mds.iloc[0].tolist()
+        group_column = list(df_mds.index)[0]
+        df_mds = df_mds.drop(group_column)
     if float( pa["percvar"].replace(",",".") ) < 100 :
         df_mds["__std__"]=df_mds.std(axis=1)
         df_mds=df_mds.sort_values( by=["__std__"],ascending=False )
@@ -32,8 +43,12 @@ def make_figure(df,pa):
     cols=["Component"+str(c+1) for c in cols]
     projected.index=df_mds.index.tolist()
     projected.reset_index(inplace=True, drop=False)
-    projected.columns=["row"]+cols
-
+    if pab['groups']:
+        projected[group_column] = groups
+        projected.columns=["row"]+cols + [group_column]
+        projected = projected[['row', group_column] + cols]
+    else:
+        projected.columns=["row"]+cols
     return projected
 
 def figure_defaults():
@@ -47,6 +62,7 @@ def figure_defaults():
         "xvals":"",\
         "ycols":[],\
         "yvals":"",\
+        "groups":"",\
         "ncomponents":"2",\
         "percvar":"100",\
         "scale":["feature","sample"],\
