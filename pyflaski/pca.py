@@ -10,6 +10,10 @@ def make_figure(df,pa):
     df_pca.index=df_pca[pa["xvals"]].tolist()
     df_pca=df_pca[pa["yvals"]]
 
+    if pa["groups"] != None:
+        groups = df_pca.loc[pa['groups']].tolist()
+        df_pca = df_pca.drop(pa['groups'])
+
     if float( pa["percvar"].replace(",",".") ) < 100 :
         df_pca["__std__"]=df_pca.std(axis=1)
         df_pca=df_pca.sort_values( by=["__std__"],ascending=False )
@@ -85,11 +89,16 @@ def make_figure(df,pa):
 
     projected=pd.DataFrame(projected)
     cols=projected.columns.tolist()
-    cols=[ "Component "+str(c+1)+" - "+str(pca.explained_variance_ratio_[c]*100)+"%" for c in cols ]
+    cols=[ "Component "+str(c+1)+" - "+str("{0:.2f}".format(float(pca.explained_variance_ratio_[c]*100)))+"%" for c in cols ]
     projected.columns=cols
     projected.index=df_pca.index.tolist()
     projected.reset_index(inplace=True, drop=False)
-    projected.columns=["row"]+cols
+    if pa['groups'] != None:
+        projected[pa['groups']] = groups
+        projected.columns=["Sample"]+cols + [pa['groups']]
+        projected = projected[['Sample', pa['groups']] + cols]
+    else:
+        projected.columns=["Sample"]+cols
 
     return projected, features
 
@@ -104,6 +113,7 @@ def figure_defaults():
         "xvals":"",\
         "ycols":[],\
         "yvals":"",\
+        "groups":"",\
         "ncomponents":"2",\
         "percvar":"100",\
         "scale":["feature","sample"],\
