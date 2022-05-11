@@ -9,6 +9,9 @@ def make_figure(df,pa):
     df_tsne=df.copy()
     df_tsne.index=df_tsne[pa["xvals"]].tolist()
     df_tsne=df_tsne[pa["yvals"]]
+    if pa["groups"] != None:
+        groups = df_tsne.loc[pa['groups']].tolist()
+        df_tsne = df_tsne.drop(pa['groups'])
 
     if float( pa["percvar"].replace(",",".") ) < 100 :
         df_tsne["__std__"]=df_tsne.std(axis=1)
@@ -34,7 +37,12 @@ def make_figure(df,pa):
     projected.columns=cols
     projected.index=df_tsne.index.tolist()
     projected.reset_index(inplace=True, drop=False)
-    projected.columns=["row"]+cols
+    if pa['groups'] != None:
+        projected[pa['groups']] = groups
+        projected.columns=["Sample"]+cols + [pa['groups']]
+        projected = projected[['Sample', pa['groups']] + cols]
+    else:
+        projected.columns=["Sample"]+cols
 
     return projected
 
@@ -49,6 +57,7 @@ def figure_defaults():
         "xvals":"",\
         "ycols":[],\
         "yvals":"",\
+        "groups":"",\
         "ncomponents":"2",\
         "percvar":"100",\
         "scale":["feature","sample"],\
