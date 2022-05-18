@@ -1,4 +1,5 @@
 #from matplotlib.figure import Figure
+from re import L
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
@@ -28,6 +29,8 @@ def make_figure(df,pa):
         
     """
 
+    print(pa['groups_settings'])
+
     tmp=df.copy()
     tmp=tmp[pa["vals"]]
 
@@ -37,15 +40,35 @@ def make_figure(df,pa):
     #Load checkboxes
     pab={}
     # print("Main", pa["kde"])
-    for arg in ["show_legend","upper_axis","lower_axis","left_axis","right_axis","errorbar",\
-        "errorbar_symmetric","tick_left_axis","tick_lower_axis","tick_upper_axis","tick_right_axis",\
-        "kde","show_hist","show_curve","show_rug"]:
-        if pa[arg] in ["off",".off"]:
-            pab[arg]=False
+    if "errorbar_symmetric" in pa["errorbar_symmetric"]:
+        pab["errorbar_symmetric"]=False
+    else:
+        pab["errorbar_symmetric"]=True
+
+    for a in ["show_hist","show_curve","show_rug"]:
+        if a in pa['kde_type']:
+            pab[a] = True
         else:
-            pab[arg]=True
-        # if arg in ["upper_axis","lower_axis","left_axis","right_axis"]:
-            # print(arg, pa[arg], pab[arg])
+            pab[a] = False
+    
+    for a in ["show_legend", 'log_scale', 'kde', 'errorbar']:
+        if a in pa["layout"]:
+            pab[a] = True
+        else:
+            pab[a] = False
+    
+    for a in ["upper_axis","lower_axis","left_axis","right_axis"]:
+        if a in pa["show_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
+    for a in ["tick_x_axis", "tick_y_axis"]:
+        if a in pa["tick_axis"]:
+            pab[a]=True
+        else:
+            pab[a]=False
+
 
     #Load floats
     floats=["bin_size","errorbar_value","errorbar_thickness","errorbar_width","x","y","axis_line_width","ticks_line_width",\
@@ -136,8 +159,8 @@ def make_figure(df,pa):
                 else:
                     h_[a]=float(h[a])
 
-            if h["label"]!="":
-                name=h["label"]
+            if h["hist_label"]!="":
+                name=h["hist_label"]
             else:
                 name=""
             
@@ -167,7 +190,7 @@ def make_figure(df,pa):
             else:
                 histnorm = h["histnorm"]
 
-            if h["cumulative"]=="on":
+            if "cumulative" in h["cumulative"]:
                 cumulative_enabled=True
             else:
                 cumulative_enabled=False
@@ -219,40 +242,59 @@ def make_figure(df,pa):
 
     #Update axes
     
-    if pa["log_scale"]==True and pa["orientation"]=="vertical":
+    if pab["log_scale"]==True and pa["orientation"]=="vertical":
         fig.update_yaxes(type="log")
-    elif pa["log_scale"]==True and pa["orientation"]=="horizontal":
+    elif pab["log_scale"]==True and pa["orientation"]=="horizontal":
         fig.update_xaxes(type="log")
+
+    if  ( not pab["lower_axis"] ) & ( pab["upper_axis"] ) :
+        fig.update_layout(xaxis={'side': 'top'})
+        pab["lower_axis"]=True
+        pab["upper_axis"]=False
+
+    if  ( not pab["left_axis"] ) & ( pab["right_axis"] ) :
+        fig.update_layout(yaxis={'side': 'right'})
+        pab["left_axis"]=True
+        pab["right_axis"]=False
 
     # print(pab["lower_axis"],pab["axis_line_width"],pab["axis_line_color"],pab["upper_axis"])
     fig.update_xaxes(zeroline=False, showline=pab["lower_axis"], linewidth=pab["axis_line_width"], linecolor=pab["axis_line_color"], mirror=pab["upper_axis"])
     fig.update_yaxes(zeroline=False, showline=pab["left_axis"], linewidth=pab["axis_line_width"], linecolor=pab["axis_line_color"],mirror=pab["right_axis"])
 
     #Update ticks
-
-    if pab["tick_lower_axis"]==False and pab["tick_right_axis"]==False and pab["tick_left_axis"]==False and pab["tick_upper_axis"]==False:
-        pa["ticks_direction_value"]=""
-        ticks=""
+    if pab["tick_x_axis"] :
+        fig.update_xaxes(ticks=pa["ticks_direction_value"], tickwidth=float(pa["ticks_line_width"]), tickcolor=pab["ticks_color"], ticklen=float(pa["ticks_length"]) )
     else:
-        ticks=pa["ticks_direction_value"]
+        fig.update_xaxes(ticks="", tickwidth=float(pa["ticks_line_width"]), tickcolor=pab["ticks_color"], ticklen=float(pa["ticks_length"]) )
 
-    fig.update_xaxes(ticks=ticks, tickwidth=pab["ticks_line_width"], tickcolor=pab["ticks_color"], ticklen=pab["ticks_length"])
-    fig.update_yaxes(ticks=ticks, tickwidth=pab["ticks_line_width"], tickcolor=pab["ticks_color"], ticklen=pab["ticks_length"])
+    if pab["tick_y_axis"] :
+        fig.update_yaxes(ticks=pa["ticks_direction_value"], tickwidth=float(pa["ticks_line_width"]), tickcolor=pab["ticks_color"], ticklen=float(pa["ticks_length"]) )
+    else:
+        fig.update_yaxes(ticks="", tickwidth=float(pa["ticks_line_width"]), tickcolor=pab["ticks_color"], ticklen=float(pa["ticks_length"]) )
+
+    # if pab["tick_lower_axis"]==False and pab["tick_right_axis"]==False and pab["tick_left_axis"]==False and pab["tick_upper_axis"]==False:
+    #     pa["ticks_direction_value"]=""
+    #     ticks=""
+    # else:
+    #     ticks=pa["ticks_direction_value"]
+
+    # fig.update_xaxes(ticks=ticks, tickwidth=pab["ticks_line_width"], tickcolor=pab["ticks_color"], ticklen=pab["ticks_length"])
+    # fig.update_yaxes(ticks=ticks, tickwidth=pab["ticks_line_width"], tickcolor=pab["ticks_color"], ticklen=pab["ticks_length"])
 
     #Update mirror property of axis based on ticks and axis selected by user
     #Determines if the axis lines or/and ticks are mirrored to the opposite side of the plotting area. 
     # If "True", the axis lines are mirrored. If "ticks", the axis lines and ticks are mirrored. If "False", mirroring is disable. 
     # If "all", axis lines are mirrored on all shared-axes subplots. If "allticks", axis lines and ticks are mirrored on all shared-axes subplots.
-    if pab["tick_upper_axis"] :
-        fig.update_xaxes(mirror="ticks")
+    # if pab["tick_upper_axis"] :
+    #     fig.update_xaxes(mirror="ticks")
     # elif pab["upper_axis"] :
     #     fig.update_xaxes(mirror=True)
     # else:
     #     fig.update_xaxes(mirror=False)
     
     
-    if pab["tick_right_axis"]:
-        fig.update_yaxes(mirror="ticks")
+    # if pab["tick_right_axis"]:
+    #     fig.update_yaxes(mirror="ticks")
     # elif pab["right_axis"]:
     #     fig.update_yaxes(mirror=True)
     # else:
@@ -415,14 +457,10 @@ def figure_defaults():
         "title_fontfamily":"Default",\
         "title_fontcolor":"None",\
         "titles":"20",\
-        "kde":".off",\
         "curve_type":"kde",\
         "curve_types":STANDARD_CURVETYPES,\
         "kde_histnorm":"probability density",\
         "kde_histnorms":["probability density","probability"],\
-        "show_hist":".off",\
-        "show_curve":".on",\
-        "show_rug":".off",\
         "rug_text":"",\
         "bin_size":"1",\
         "opacity":0.8,\
@@ -440,12 +478,10 @@ def figure_defaults():
         "title_yanchors":STANDARD_TITLE_YANCHORS,\
         "title_xanchor":"auto",\
         "title_yanchor":"top",\
-        "show_legend":"on",\
-        "errorbar":".off",\
         "errorbar_value":"10",\
         "errorbar_type":"percent",\
         "errorbar_types":STANDARD_ERRORBAR_TYPES,\
-        "errorbar_symmetric":".off",\
+        "errorbar_symmetric":"",\
         "errorbar_color":"darkgrey",\
         "errorbar_width":"2",\
         "errorbar_thickness":"2",\
@@ -457,7 +493,6 @@ def figure_defaults():
         "groups":[],\
         "vals":[],\
         "groups_settings":dict(),\
-        "log_scale":".off",\
         "fonts":STANDARD_FONTS,\
         "cumulative_directions":STANDARD_CUMULATIVE_DIRECTIONS,\
         "colors":STANDARD_COLORS,\
@@ -477,15 +512,8 @@ def figure_defaults():
         "label_fontcolor":"None",\
         "xlabels":"14",\
         "ylabels":"14",\
-        # "left_axis":".on" ,\
-        # "right_axis":".on",\
-        # "upper_axis":".on",\
-        # "lower_axis":".on",\
-        # "tick_left_axis":".on" ,\
-        # "tick_right_axis":".off",\
-        # "tick_upper_axis":".off",\
-        # "tick_lower_axis":".on",\
         "layout":["show_legend"],\
+        "kde_type":["show_curve"],\
         "show_axis":["left_axis","right_axis","upper_axis","lower_axis"],\
         "tick_axis":["tick_x_axis","tick_y_axis"],\
         "ticks_direction":TICKS_DIRECTIONS,\
@@ -545,9 +573,9 @@ def figure_defaults():
         "session_argumentsn":"MyArguments.ihistogram.plot",\
         "inputargumentsfile":"Select file..",\
         "hist_label":"",\
-        "hist_direction":"increasing",\
-        "hist_cumulative":[],\
-        "hist_func":"count",\
+        "cumulative_direction":"increasing",\
+        "cumulative":[],\
+        "histfunc":"count",\
         "color_value":"None",\
         "color_rgb":"",\
         "line_color":"lightgray",\
