@@ -410,7 +410,7 @@ def figure_defaults():
 
     plot_arguments={"fig_width":"600",\
         "fig_height":"600",\
-        "title":'iHistogram',\
+        "title":'Histogram',\
         "title_fontsize":"20",\
         "title_fontfamily":"Default",\
         "title_fontcolor":"None",\
@@ -439,7 +439,7 @@ def figure_defaults():
         "title_xanchors":STANDARD_TITLE_XANCHORS,\
         "title_yanchors":STANDARD_TITLE_YANCHORS,\
         "title_xanchor":"auto",\
-        "title_yanchor":"auto",\
+        "title_yanchor":"top",\
         "show_legend":"on",\
         "errorbar":".off",\
         "errorbar_value":"10",\
@@ -466,7 +466,6 @@ def figure_defaults():
         "barmodes":STANDARD_BARMODES,\
         "histtype_value":"bar",\
         "linestyles":LINE_STYLES,\
-        "linestyle_value":"",\
         "orientations":STANDARD_ORIENTATIONS, \
         "fontsizes":STANDARD_SIZES,\
         "xlabel_size":STANDARD_SIZES,\
@@ -478,14 +477,17 @@ def figure_defaults():
         "label_fontcolor":"None",\
         "xlabels":"14",\
         "ylabels":"14",\
-        "left_axis":".on" ,\
-        "right_axis":".on",\
-        "upper_axis":".on",\
-        "lower_axis":".on",\
-        "tick_left_axis":".on" ,\
-        "tick_right_axis":".off",\
-        "tick_upper_axis":".off",\
-        "tick_lower_axis":".on",\
+        # "left_axis":".on" ,\
+        # "right_axis":".on",\
+        # "upper_axis":".on",\
+        # "lower_axis":".on",\
+        # "tick_left_axis":".on" ,\
+        # "tick_right_axis":".off",\
+        # "tick_upper_axis":".off",\
+        # "tick_lower_axis":".on",\
+        "layout":["show_legend"],\
+        "show_axis":["left_axis","right_axis","upper_axis","lower_axis"],\
+        "tick_axis":["tick_x_axis","tick_y_axis"],\
         "ticks_direction":TICKS_DIRECTIONS,\
         "ticks_direction_value":TICKS_DIRECTIONS[1],\
         "ticks_length":"6.0",\
@@ -541,6 +543,29 @@ def figure_defaults():
         "session_downloadn":"MySession.ihistogram.plot",\
         "inputsessionfile":"Select file..",\
         "session_argumentsn":"MyArguments.ihistogram.plot",\
-        "inputargumentsfile":"Select file.."}
+        "inputargumentsfile":"Select file..",\
+        "hist_label":"",\
+        "hist_direction":"increasing",\
+        "hist_cumulative":[],\
+        "hist_func":"count",\
+        "color_value":"None",\
+        "color_rgb":"",\
+        "line_color":"lightgray",\
+        "line_rgb":"",\
+        "linestyle_value":"solid",\
+        "linewidth":"0.5",\
+        "histnorm":"None",\
+        "bins_number":"",\
+        "orientation_value":"vertical",\
+        "text":"",\
+        "hoverinfo":"all",\
+        "hover_align":"auto",\
+        "hover_bordercolor":"None",\
+        "hover_bgcolor":"None",\
+        "hover_fontfamily":"Default",\
+        "hover_fontsize":"12",\
+        "hover_fontcolor":"None",\
+        }
+        
     
     return plot_arguments
