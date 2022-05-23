@@ -123,7 +123,7 @@ def make_figure(df,pa):
             hist_data.append(tmp[col].dropna())
 
         if (not pab["show_hist"]) & (not pab["show_curve"]):
-            pa["show_curve"]="on"
+            pa['kde_type'].append("show_curve")
             pab["show_curve"]=True
 
         fig=ff.create_distplot(hist_data=hist_data, group_labels=pa["vals"],curve_type=pa["curve_type"],show_hist=pab["show_hist"],\
@@ -158,6 +158,10 @@ def make_figure(df,pa):
                     h_[a]=None
                 else:
                     h_[a]=float(h[a])
+            
+            # save orientation to pa
+            pa["orientation"] = h["orientation_value"]
+
 
             if h["hist_label"]!="":
                 name=h["hist_label"]
