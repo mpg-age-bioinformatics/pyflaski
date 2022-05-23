@@ -104,6 +104,7 @@ def make_figure(df,pa):
     if pab["kde"]==True:
 
         colors=list()
+        group_labels = list()
         if pa["rug_text"]!="":
             rug_text=pa["rug_text"].split(",")
         else:
@@ -118,6 +119,11 @@ def make_figure(df,pa):
             else:
                 colors.append(GET_COLOR(h["color_rgb"]))
         
+            if h["hist_label"] != "":
+                group_labels.append(h["hist_label"])
+            else:
+                group_labels.append(h["name"])
+
         hist_data=[]
         for col in tmp.columns:
             hist_data.append(tmp[col].dropna())
@@ -126,7 +132,7 @@ def make_figure(df,pa):
             pa['kde_type'].append("show_curve")
             pab["show_curve"]=True
 
-        fig=ff.create_distplot(hist_data=hist_data, group_labels=pa["vals"],curve_type=pa["curve_type"],show_hist=pab["show_hist"],\
+        fig=ff.create_distplot(hist_data=hist_data, group_labels=group_labels,curve_type=pa["curve_type"],show_hist=pab["show_hist"],\
             show_curve=pab["show_curve"],show_rug=pab["show_rug"],bin_size=pab["bin_size"],rug_text=rug_text,colors=colors, histnorm=pa["kde_histnorm"])
 
     else:
@@ -166,7 +172,7 @@ def make_figure(df,pa):
             if h["hist_label"]!="":
                 name=h["hist_label"]
             else:
-                name=""
+                name=h["name"]
             
             if h["text"]!="":
                 text=h["text"]
