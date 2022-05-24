@@ -29,8 +29,6 @@ def make_figure(df,pa):
         
     """
 
-    print(pa['groups_settings'])
-
     tmp=df.copy()
     tmp=tmp[pa["vals"]]
 
@@ -269,7 +267,7 @@ def make_figure(df,pa):
 
     # print(pab["lower_axis"],pab["axis_line_width"],pab["axis_line_color"],pab["upper_axis"])
     fig.update_xaxes(zeroline=False, showline=pab["lower_axis"], linewidth=pab["axis_line_width"], linecolor=pab["axis_line_color"], mirror=pab["upper_axis"])
-    fig.update_yaxes(zeroline=False, showline=pab["left_axis"], linewidth=pab["axis_line_width"], linecolor=pab["axis_line_color"],mirror=pab["right_axis"])
+    fig.update_yaxes(zeroline=True, showline=pab["left_axis"], linewidth=pab["axis_line_width"], linecolor=pab["axis_line_color"],mirror=pab["right_axis"])
 
     #Update ticks
     if pab["tick_x_axis"] :
