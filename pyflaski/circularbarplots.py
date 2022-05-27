@@ -13,20 +13,20 @@ def make_figure(df,pa):
     df_circ=df.copy()
     
     r=pa["angvals"]
-    print(r)
+    #print(r)
     theta=pa["radvals"]
-    print(theta)
+    #print(theta)
     color=pa["groupval"]
-    print(color)
+    #print(color)
 
     ## Fit the data into the model
 
     pa_={}
     for n in ["fig_width","fig_height"]:
-        if pa[n] == "":
-            pa_[n]=None
-        else:
+        if pa[n]:
             pa_[n]=float(pa[n])
+        else:
+            pa_[n]=pa[n]
 
     # for n in ["angular_grid","angular_line","angular_ticklabels","radial_grid","radial_line","radial_visibility","radial_ticklabels"]:
     #     if pa[n] in ["off", ".off"]:
@@ -56,7 +56,7 @@ def make_figure(df,pa):
 
     if str(pa["groupval"]) == "None":
         colorv=None
-        print(pa["bar_colour_val"])
+        #print(pa["bar_colour_val"])
         color_discrete_sequence_.append( pa["bar_colour_val"] )
 
     elif str(pa["groupval"]) != "None":
@@ -69,7 +69,7 @@ def make_figure(df,pa):
             barColor=PA_["bar_colour_val"]
             color_discrete_sequence_.append(barColor)
     
-    print(color_discrete_sequence_)
+    #print(color_discrete_sequence_)
 
     fig = px.bar_polar(df_circ, r=str(r), theta=str(theta), color=colorv,
                    color_discrete_sequence=color_discrete_sequence_, ## Fix according to groups/colors
@@ -79,7 +79,7 @@ def make_figure(df,pa):
                    start_angle=int(pa["start_angle"]), 
                    title=pa["title"])
 
-
+    # width=pa_["fig_width"], height=pa_["fig_height"], 
     fig.update_layout(width=pa_["fig_width"], height=pa_["fig_height"], template="plotly_white",
 
                   legend = dict(bgcolor = pa["legend_bgcolor"], bordercolor=pa["legend_bordercolor"], borderwidth=float(pa["legend_borderwidth"]), 
@@ -156,18 +156,18 @@ def figure_defaults():
     """
     plot_arguments={
         "fig_width":"800",\
-        "fig_height":"600",\
+        "fig_height":"800",\
         "title":'Circular Barplot',\
         "title_size":STANDARD_SIZES,\
         "titles":"28",\
         "title_colors":STANDARD_COLORS,\
         "title_color":"black",\
         "angcols":[],\
-        "angvals":"",\
+        "angvals":None,\
         "radcols":[],\
-        "radvals":"",\
-        "group":["None"],\
-        "groupval":"",\
+        "radvals":None,\
+        "groupval":None,\
+        "list_of_groups":[],\
         "groups_settings":[],\
         "bar_colours":STANDARD_COLORS,\
         "bar_colour_val":"blue",\
@@ -200,7 +200,7 @@ def figure_defaults():
         "polar_hole":"0.05",\
         "paper_bgcolors":STANDARD_COLORS,\
         "paper_bgcolor":"white",\
-        "angular_features":["angular_grid","angular_line","angular_ticklabels"],\
+        "angular_features":["angular_grid","angular_line","angular_ticklabels","angular_ticks"],\
         #"angular_grid":".off",\
         "angular_gridcolors":STANDARD_COLORS,\
         "angular_gridcolor":"black",\
