@@ -80,12 +80,21 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         namesdic.index=namesdic[0].tolist()
         namesdic=namesdic.to_dict()[ 1 ]
 
+    david_df_genes=list(set(david_df["genes"].tolist()))
+    gedic_genes=list(gedic.keys())
+    missing=[ s for s in david_df_genes if s not in gedic_genes ]
+    if missing:
+        warnmsg="Not all genes in your DAVID table were present on your Gene Expression table."
+    else:
+        warnmsg=None
+
     if pa_["log10transform"]:
         david_df[pa["plotvalue"]]=david_df[ pa["plotvalue"] ].apply(lambda x: np.log10(float(x))*-1)
 
     plotdf=pd.DataFrame()
     for term in david_df[ pa["terms_column"]  ].tolist():
         tmp=david_df[david_df[ pa["terms_column"] ]==term]
+        tmp=tmp[tmp["genes"].isin(gedic_genes)]
         plotvalue=float(tmp.iloc[0,tmp.columns.tolist().index( pa["plotvalue"] )])
         #print(plotvalue)
         #print(type(plotvalue))
@@ -238,7 +247,7 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
 
     fig.update_layout(xaxis_showgrid=pa_["grid"], font_color="black")
 
-    return fig
+    return fig, warnmsg
 
 def figure_defaults(checkboxes=CHECKBOXES):
     """Generates default figure arguments.
