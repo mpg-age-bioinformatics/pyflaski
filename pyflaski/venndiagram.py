@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
+import warnings
+from collections import Counter
 import matplotlib
 import matplotlib.pylab as plt
 from matplotlib_venn import venn2, venn3, venn2_circles, venn3_circles
-import sys
+import sys, os
 matplotlib.use('agg')
 
 def GET_COLOR(x):
@@ -14,6 +16,7 @@ def GET_COLOR(x):
         return vals
     else:
         return str(x)
+
 
 
 def make_figure(pa):
@@ -30,8 +33,8 @@ def make_figure(pa):
     #fig=plt.figure(figsize=(float(pa["fig_width"]),float(pa["fig_height"])))
     fig, axes = plt.subplots(1, 1,figsize=(float(pa["fig_width"]),float(pa["fig_height"])))
 
-    print("HERE2")
-    print(pa["set1_values"])
+    #print("HERE2")
+    #print(pa["set1_values"])
     pa_={}
     sets={}
 
@@ -53,11 +56,13 @@ def make_figure(pa):
         else:
             pa_["%s_line_color" %set_index ] = pa["%s_line_color" %set_index ]
 
-    print(pa["set1_values"])
-    print(pa["set2_values"])
+    #print(pa["set1_values"])
+    #print(pa["set2_values"])
     if len( list(sets.keys()) ) == 2:
         set1=list(sets.keys())[0]
         set2=list(sets.keys())[1]
+        print(sets[set1])
+        print(sets[set2])
         venn2( [ sets[set1], sets[set2] ], \
                 ( pa[ "%s_name" %(set1)], pa[ "%s_name" %(set2) ] ), \
                 set_colors=( pa_[ "%s_color_value" %(set1)], pa_[ "%s_color_value" %(set2) ]),\
@@ -108,43 +113,43 @@ def make_figure(pa):
         venn[1].set_color(pa_[ "%s_line_color" %(set2)])
         venn[2].set_color(pa_[ "%s_line_color" %(set3)])   
 
-    all_values=[]
-    for set_index in list( sets.keys() ):
-        all_values=all_values+ list(sets[set_index])
-    df=pd.DataFrame(index=list(set(all_values)))
-    for set_index in list( sets.keys() ):
-        tmp=pd.DataFrame( { pa[ "%s_name" %(set_index)]:list(sets[set_index]) } ,index=list(sets[set_index]) )
-        df=pd.merge(df,tmp,how="left",left_index=True, right_index=True)
+    # all_values=[]
+    # for set_index in list( sets.keys() ):
+    #     all_values=all_values+ list(sets[set_index])
+    # df=pd.DataFrame(index=list(set(all_values)))
+    # for set_index in list( sets.keys() ):
+    #     tmp=pd.DataFrame( { pa[ "%s_name" %(set_index)]:list(sets[set_index]) } ,index=list(sets[set_index]) )
+    #     df=pd.merge(df,tmp,how="left",left_index=True, right_index=True)
 
-    cols=df.columns.tolist()
-    def check_common(df, left,right,third=None):
-        if not third:
-            left=df[left]
-            right=df[right]
-            if ( str(left) != str(np.nan) ) &  ( str(right) != str(np.nan) ):
-                if left == right:
-                    return "yes"
-                else:
-                    return "no"
-            else:
-                return "no"
-        else:
-            left=df[left]
-            right=df[right]
-            third=df[third]
-            if ( str(left) != str(np.nan) ) &  ( str(right) != str(np.nan) ) & ( str(third) != str(np.nan) ):
-                if (left == right) & (left == third):
-                    return "yes"
-                else:
-                    return "no"
-            else:
-                return "no"
+    # cols=df.columns.tolist()
+    # def check_common(df, left,right,third=None):
+    #     if not third:
+    #         left=df[left]
+    #         right=df[right]
+    #         if ( str(left) != str(np.nan) ) &  ( str(right) != str(np.nan) ):
+    #             if left == right:
+    #                 return "yes"
+    #             else:
+    #                 return "no"
+    #         else:
+    #             return "no"
+    #     else:
+    #         left=df[left]
+    #         right=df[right]
+    #         third=df[third]
+    #         if ( str(left) != str(np.nan) ) &  ( str(right) != str(np.nan) ) & ( str(third) != str(np.nan) ):
+    #             if (left == right) & (left == third):
+    #                 return "yes"
+    #             else:
+    #                 return "no"
+    #         else:
+    #             return "no"
                 
-    df["%s & %s" %(cols[0],cols[1])]=df.apply(check_common,args=(cols[0],cols[1]), axis=1 )
-    if len(cols) == 3:
-        df["%s & %s" %(cols[1],cols[2])]=df.apply(check_common,args=(cols[1],cols[2]), axis=1 )
-        df["%s & %s" %(cols[0],cols[2])]=df.apply(check_common,args=(cols[0],cols[2]), axis=1 )
-        df["%s & %s & %s" %(cols[0],cols[1],cols[2])]=df.apply(check_common,args=(cols[0],cols[1],cols[2]), axis=1 )
+    # df["%s & %s" %(cols[0],cols[1])]=df.apply(check_common,args=(cols[0],cols[1]), axis=1 )
+    # if len(cols) == 3:
+    #     df["%s & %s" %(cols[1],cols[2])]=df.apply(check_common,args=(cols[1],cols[2]), axis=1 )
+    #     df["%s & %s" %(cols[0],cols[2])]=df.apply(check_common,args=(cols[0],cols[2]), axis=1 )
+    #     df["%s & %s & %s" %(cols[0],cols[1],cols[2])]=df.apply(check_common,args=(cols[0],cols[1],cols[2]), axis=1 )
     
     plt.title(pa["title"], fontsize=float(pa["title_size_value"]))
 
@@ -170,11 +175,12 @@ def make_figure(pa):
 
     else:
         pvalues=None
-    print(df)
+    #print(df)
     print(pvalues)
     print("HERE3")
-    #return fig
-    return fig, df, pvalues
+    return fig
+    #return fig, df, pvalues
+
 
 STANDARD_SIZES=[ str(i) for i in list(range(101)) ]
 STANDARD_COLORS=["blue","green","red","cyan","magenta","yellow","black","white"]

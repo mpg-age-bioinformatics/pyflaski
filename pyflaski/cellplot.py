@@ -94,13 +94,13 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
     plotdf=pd.DataFrame()
     for term in david_df[ pa["terms_column"]  ].tolist():
         tmp=david_df[david_df[ pa["terms_column"] ]==term]
-        tmp=tmp[tmp["genes"].isin(gedic_genes)]
         plotvalue=float(tmp.iloc[0,tmp.columns.tolist().index( pa["plotvalue"] )])
         #print(plotvalue)
         #print(type(plotvalue))
         # log10p=float(tmp.iloc[0,tmp.columns.tolist().index(pa["plotvalue"])])
         genes=tmp.iloc[0,tmp.columns.tolist().index( pa["david_gene_ids"] )].split(", ")
         tmp=pd.DataFrame({"term":term,"genes":genes})
+        tmp=tmp[tmp["genes"].isin(gedic_genes)]
         tmp["expression"]=tmp["genes"].apply(lambda x: float( gedic.get(x.upper())  ) )
         tmp["gene_name"]=tmp["genes"].apply(lambda x: namesdic.get(x.upper()) )
         tmp["n_genes"]=len(genes)
