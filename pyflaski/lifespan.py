@@ -9,6 +9,7 @@ from lifelines import CoxPHFitter
 from lifelines.statistics import logrank_test
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+import plotly.tools as tls 
 
 marker_dict={'point':'.',\
              'pixel':',',\

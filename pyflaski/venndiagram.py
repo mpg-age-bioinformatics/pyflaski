@@ -4,9 +4,13 @@ import warnings
 from collections import Counter
 import matplotlib
 import matplotlib.pylab as plt
-from matplotlib_venn import venn2, venn3, venn2_circles, venn3_circles
+from matplotlib_venn import venn2, venn3
 import sys, os
 matplotlib.use('agg')
+
+import plotly.tools as tls 
+import plotly.graph_objects as go
+import scipy
 
 def GET_COLOR(x):
     if str(x)[:3].lower() == "rgb":
@@ -33,8 +37,6 @@ def make_figure(pa):
     #fig=plt.figure(figsize=(float(pa["fig_width"]),float(pa["fig_height"])))
     fig, axes = plt.subplots(1, 1,figsize=(float(pa["fig_width"]),float(pa["fig_height"])))
 
-    #print("HERE2")
-    #print(pa["set1_values"])
     pa_={}
     sets={}
 
@@ -52,7 +54,8 @@ def make_figure(pa):
             pa_["%s_color_value" %set_index ] = pa["%s_color_value" %set_index ]
 
         if pa[ "%s_line_rgb" %set_index] != "":
-            pa_["%s_line_color" %set_index ] = GET_COLOR( pa[ "%s_line_rgb" %set_index ] )
+            #pa_["%s_line_color" %set_index ] = GET_COLOR( pa[ "%s_line_rgb" %set_index ] )
+            pa_["%s_line_color" %set_index ] =  pa[ "%s_line_rgb" %set_index ] 
         else:
             pa_["%s_line_color" %set_index ] = pa["%s_line_color" %set_index ]
 
@@ -63,95 +66,189 @@ def make_figure(pa):
         set2=list(sets.keys())[1]
         print(sets[set1])
         print(sets[set2])
-        venn2( [ sets[set1], sets[set2] ], \
-                ( pa[ "%s_name" %(set1)], pa[ "%s_name" %(set2) ] ), \
-                set_colors=( pa_[ "%s_color_value" %(set1)], pa_[ "%s_color_value" %(set2) ]),\
-                alpha=float( pa["fill_alpha"] ),\
-                ax=axes)
-        venn=venn2_circles( [ sets[set1], sets[set2] ], alpha=0.5, linestyle="dashed", linewidth=1, color="black",ax=axes)
+        #Define color list for sets
+        L_color=[ pa_[ "%s_color_value" %(set1)], pa_[ "%s_color_value" %(set2)] ]
 
-        venn[0].set_lw( float(pa[ "%s_linewidth" %(set1) ]))
-        venn[1].set_lw( float(pa[ "%s_linewidth" %(set2) ]))
-
-        venn[0].set_linestyle(pa[ "%s_linestyle_value" %(set1)])
-        venn[1].set_linestyle(pa[ "%s_linestyle_value" %(set2)])
-
-        venn[0].set_alpha(float(pa[ "%s_line_alpha" %(set1)]))
-        venn[1].set_alpha(float(pa[ "%s_line_alpha" %(set2)]))
-
-        venn[0].set_color(pa_[ "%s_line_color" %(set1)])
-        venn[1].set_color(pa_[ "%s_line_color" %(set2)])
-
+        LINE_color=[ pa_[ "%s_line_color" %(set1)], pa_[ "%s_line_color" %(set2)] ]
+        LINE_width=[ float(pa[ "%s_linewidth" %(set1)]), float(pa[ "%s_linewidth" %(set2)]) ]
+        LINE_style=[ pa[ "%s_linestyle_value" %(set1)], pa[ "%s_linestyle_value" %(set2)] ]
+        
+        v=venn2( [ sets[set1], sets[set2] ], \
+                 [ pa[ "%s_name" %(set1)], pa[ "%s_name" %(set2)] ]
+                )
+       
+        plt.close()
 
     elif len( list(sets.keys()) ) == 3:
         set1=list(sets.keys())[0]
         set2=list(sets.keys())[1]
         set3=list(sets.keys())[2]
-        venn3( [ sets[set1], sets[set2], sets[set3]  ], \
-                ( pa[ "%s_name" %(set1)], pa[ "%s_name" %(set2)], pa[ "%s_name" %(set3) ]),\
-                set_colors=( pa_[ "%s_color_value" %(set1)], pa_[ "%s_color_value" %(set2)], pa_[ "%s_color_value" %(set3) ]),\
-                alpha=float( pa["fill_alpha"] ))
-        venn=venn3_circles( [ sets[set1], sets[set2], sets[set3] ], \
-                        alpha=0.5, \
-                        linestyle="dashed", \
-                        linewidth=1, \
-                        color="k")
-
-        venn[0].set_lw( float(pa[ "%s_linewidth" %(set1)] ) ) 
-        venn[1].set_lw( float(pa[ "%s_linewidth" %(set2)] ) )
-        venn[2].set_lw( float(pa[ "%s_linewidth" %(set3)] ) )
-
-        venn[0].set_linestyle(pa[ "%s_linestyle_value" %(set1)])
-        venn[1].set_linestyle(pa[ "%s_linestyle_value" %(set2)])
-        venn[2].set_linestyle(pa[ "%s_linestyle_value" %(set2)])
-
-        venn[0].set_alpha( float(pa[ "%s_line_alpha" %(set1)]))
-        venn[1].set_alpha( float(pa[ "%s_line_alpha" %(set2)]))
-        venn[2].set_alpha( float(pa[ "%s_line_alpha" %(set3)]))
-
-        venn[0].set_color(pa_[ "%s_line_color" %(set1)])
-        venn[1].set_color(pa_[ "%s_line_color" %(set2)])
-        venn[2].set_color(pa_[ "%s_line_color" %(set3)])   
-
-    # all_values=[]
-    # for set_index in list( sets.keys() ):
-    #     all_values=all_values+ list(sets[set_index])
-    # df=pd.DataFrame(index=list(set(all_values)))
-    # for set_index in list( sets.keys() ):
-    #     tmp=pd.DataFrame( { pa[ "%s_name" %(set_index)]:list(sets[set_index]) } ,index=list(sets[set_index]) )
-    #     df=pd.merge(df,tmp,how="left",left_index=True, right_index=True)
-
-    # cols=df.columns.tolist()
-    # def check_common(df, left,right,third=None):
-    #     if not third:
-    #         left=df[left]
-    #         right=df[right]
-    #         if ( str(left) != str(np.nan) ) &  ( str(right) != str(np.nan) ):
-    #             if left == right:
-    #                 return "yes"
-    #             else:
-    #                 return "no"
-    #         else:
-    #             return "no"
-    #     else:
-    #         left=df[left]
-    #         right=df[right]
-    #         third=df[third]
-    #         if ( str(left) != str(np.nan) ) &  ( str(right) != str(np.nan) ) & ( str(third) != str(np.nan) ):
-    #             if (left == right) & (left == third):
-    #                 return "yes"
-    #             else:
-    #                 return "no"
-    #         else:
-    #             return "no"
-                
-    # df["%s & %s" %(cols[0],cols[1])]=df.apply(check_common,args=(cols[0],cols[1]), axis=1 )
-    # if len(cols) == 3:
-    #     df["%s & %s" %(cols[1],cols[2])]=df.apply(check_common,args=(cols[1],cols[2]), axis=1 )
-    #     df["%s & %s" %(cols[0],cols[2])]=df.apply(check_common,args=(cols[0],cols[2]), axis=1 )
-    #     df["%s & %s & %s" %(cols[0],cols[1],cols[2])]=df.apply(check_common,args=(cols[0],cols[1],cols[2]), axis=1 )
+        #Define color list for sets
+        L_color=[ pa_[ "%s_color_value" %(set1)], pa_[ "%s_color_value" %(set2)], pa_[ "%s_color_value" %(set3)] ]
+        LINE_color=[ pa_[ "%s_line_color" %(set1)], pa_[ "%s_line_color" %(set2)], pa_[ "%s_line_color" %(set3)] ]
+        LINE_width=[ float(pa[ "%s_linewidth" %(set1)]), float(pa[ "%s_linewidth" %(set2)]), float(pa[ "%s_linewidth" %(set3)]) ]
+        LINE_style=[ pa[ "%s_linestyle_value" %(set1)], pa[ "%s_linestyle_value" %(set2)], pa[ "%s_linestyle_value" %(set3)] ]
+        
+        v=venn3( [ sets[set1], sets[set2], sets[set3]  ], \
+                 [ pa[ "%s_name" %(set1)], pa[ "%s_name" %(set2)], pa[ "%s_name" %(set3) ] ]
+                )
+        plt.close()
     
-    plt.title(pa["title"], fontsize=float(pa["title_size_value"]))
+    n_sets=len( list(sets.keys()) )
+
+    #Create empty lists to hold shapes and annotations
+    L_shapes = []
+    L_annotation = []
+
+    #Create empty list to make hold of min and max values of set shapes
+    L_x_max = []
+    L_y_max = []
+    L_x_min = []
+    L_y_min = []
+
+
+    for i in range(0,n_sets):
+        print(i)
+        print(L_color[i])
+        print(LINE_color[i])
+        print(LINE_width[i])
+        #create circle shape for current set
+        shape = go.layout.Shape(
+                type="circle",
+                xref="x",
+                yref="y",
+                x0= v.centers[i][0] - v.radii[i],
+                y0=v.centers[i][1] - v.radii[i],
+                x1= v.centers[i][0] + v.radii[i],
+                y1= v.centers[i][1] + v.radii[i],
+                fillcolor=L_color[i],
+                line_color=LINE_color[i],
+                line_width=LINE_width[i],
+                line_dash=LINE_style[i],
+                opacity = float(pa["fill_alpha"])
+                )
+
+        L_shapes.append(shape)
+
+        #create set label for current set
+        anno_set_label = go.layout.Annotation(
+                xref="x",
+                yref="y",
+                x = v.set_labels[i].get_position()[0],
+                y = v.set_labels[i].get_position()[1],
+                text = v.set_labels[i].get_text(),
+                showarrow=False
+                )
+        L_annotation.append(anno_set_label)
+    
+        #get min and max values of current set shape
+        L_x_max.append(v.centers[i][0] + v.radii[i])
+        L_x_min.append(v.centers[i][0] - v.radii[i])
+        L_y_max.append(v.centers[i][1] + v.radii[i])
+        L_y_min.append(v.centers[i][1] - v.radii[i])
+
+        #determine number of subsets
+        n_subsets = sum([scipy.special.binom(n_sets,i+1) for i in range(0,n_sets)])
+    
+        for i in range(0,int(n_subsets)):
+            
+            #create subset label (number of common elements for current subset
+            anno_subset_label = go.layout.Annotation(
+                    xref="x",
+                    yref="y",
+                    x = v.subset_labels[i].get_position()[0],
+                    y = v.subset_labels[i].get_position()[1],
+                    text = v.subset_labels[i].get_text(),
+                    showarrow=False
+            )
+            
+            L_annotation.append(anno_subset_label)
+        
+        
+    #define off_set for the figure range    
+    off_set = 0.2
+    
+    #get min and max for x and y dimension to set the figure range
+    x_max = max(L_x_max) + off_set
+    x_min = min(L_x_min) - off_set
+    y_max = max(L_y_max) + off_set
+    y_min = min(L_y_min) - off_set
+    
+    #create plotly figure
+    fig = go.Figure()
+    
+    #set xaxes range and hide ticks and ticklabels
+    fig.update_xaxes(
+        range=[x_min, x_max], 
+        showticklabels=False, 
+        ticklen=0
+    )
+    
+    #set yaxes range and hide ticks and ticklabels
+    fig.update_yaxes(
+        range=[y_min, y_max], 
+        scaleanchor="x", 
+        scaleratio=1, 
+        showticklabels=False, 
+        ticklen=0
+    )
+    
+    #set figure properties and add shapes and annotations
+    fig.update_layout(
+        plot_bgcolor='white', 
+        margin = dict(b = 0, l = 10, pad = 0, r = 10, t = 40),
+        width=float(pa["fig_width"]), 
+        height=float(pa["fig_height"]),
+        shapes= L_shapes, 
+        annotations = L_annotation,
+        title = dict(text = pa["title"], x=0.5, y=0.90, xanchor = 'center', 
+        font=dict(
+            family="Arial",
+            size=float(pa["title_size_value"]),
+            color='#000000')
+        )
+        
+    )
+
+    #fig.show()
+
+    all_values=[]
+    for set_index in list( sets.keys() ):
+        all_values=all_values+ list(sets[set_index])
+    df=pd.DataFrame(index=list(set(all_values)))
+    for set_index in list( sets.keys() ):
+        tmp=pd.DataFrame( { pa[ "%s_name" %(set_index)]:list(sets[set_index]) } ,index=list(sets[set_index]) )
+        df=pd.merge(df,tmp,how="left",left_index=True, right_index=True)
+
+    cols=df.columns.tolist()
+    def check_common(df, left,right,third=None):
+        if not third:
+            left=df[left]
+            right=df[right]
+            if ( str(left) != str(np.nan) ) &  ( str(right) != str(np.nan) ):
+                if left == right:
+                    return "yes"
+                else:
+                    return "no"
+            else:
+                return "no"
+        else:
+            left=df[left]
+            right=df[right]
+            third=df[third]
+            if ( str(left) != str(np.nan) ) &  ( str(right) != str(np.nan) ) & ( str(third) != str(np.nan) ):
+                if (left == right) & (left == third):
+                    return "yes"
+                else:
+                    return "no"
+            else:
+                return "no"
+                
+    df["%s & %s" %(cols[0],cols[1])]=df.apply(check_common,args=(cols[0],cols[1]), axis=1 )
+    if len(cols) == 3:
+        df["%s & %s" %(cols[1],cols[2])]=df.apply(check_common,args=(cols[1],cols[2]), axis=1 )
+        df["%s & %s" %(cols[0],cols[2])]=df.apply(check_common,args=(cols[0],cols[2]), axis=1 )
+        df["%s & %s & %s" %(cols[0],cols[1],cols[2])]=df.apply(check_common,args=(cols[0],cols[1],cols[2]), axis=1 )
 
     if pa["population_size"]!="":
         pvalues={}
@@ -175,16 +272,16 @@ def make_figure(pa):
 
     else:
         pvalues=None
-    #print(df)
-    print(pvalues)
+    
     print("HERE3")
-    return fig
-    #return fig, df, pvalues
+    
+
+    return fig, df, pvalues
 
 
 STANDARD_SIZES=[ str(i) for i in list(range(101)) ]
 STANDARD_COLORS=["blue","green","red","cyan","magenta","yellow","black","white"]
-LINE_STYLES=["solid","dashed","dashdot","dotted","None"]
+LINE_STYLES=["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"]
 
 def figure_defaults():
     """Generates default figure arguments.
@@ -194,14 +291,14 @@ def figure_defaults():
     """
 
     plot_arguments={
-        "fig_width":"600",\
-        "fig_height":"600",\
+        "fig_width":"800",\
+        "fig_height":"400",\
         "title":'Venn diagram',\
         "title_size":STANDARD_SIZES,\
         "title_size_value":"20",\
-        "set1_name":"set1",\
-        "set2_name":"set2",\
-        "set3_name":"set3",\
+        "set1_name":"Set1",\
+        "set2_name":"Set2",\
+        "set3_name":"Set3",\
         "set1_values":"",\
         "set2_values":"",\
         "set3_values":"",\
