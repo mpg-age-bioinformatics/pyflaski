@@ -273,8 +273,6 @@ def make_figure(pa):
     else:
         pvalues=None
     
-    print("HERE3")
-    
 
     return fig, df, pvalues
 
@@ -329,12 +327,12 @@ def figure_defaults():
         "population_size":"",\
         "download_format":["png","pdf","svg"],\
         "downloadf":"pdf",\
-        "downloadn":"scatterplot",\
-        "session_downloadn":"MySession.scatter.plot",\
+        "downloadn":"venndiagram",\
+        "session_downloadn":"MySession.venndiagram.plot",\
         "inputsessionfile":"Select file..",\
-        "session_argumentsn":"MyArguments.scatter.plot",\
+        "session_argumentsn":"MyArguments.venndiagram.plot",\
         "inputargumentsfile":"Select file..",\
-        "groups_value":None\
+        #"groups_value":None\
     }
     # grid colors not implemented in UI
 
