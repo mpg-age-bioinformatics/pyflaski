@@ -108,10 +108,10 @@ def make_figure(pa):
 
 
     for i in range(0,n_sets):
-        print(i)
-        print(L_color[i])
-        print(LINE_color[i])
-        print(LINE_width[i])
+        # print(i)
+        # print(L_color[i])
+        # print(LINE_color[i])
+        # print(LINE_width[i])
         #create circle shape for current set
         shape = go.layout.Shape(
                 type="circle",
