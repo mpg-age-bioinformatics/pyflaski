@@ -355,15 +355,15 @@ def make_figure(df,pa):
                                         'showticklabels': pab["col_dendogram_dist"],
                                         'ticks':""})
 
-    fig.update_layout(template='plotly_white')
-
+    #fig.update_layout(template='plotly_white')
+    fig.update_layout( width=pa_["fig_width"], height=pa_["fig_height"] , template="plotly_white")
     fig.update_layout(title={"text":pa["title"],"yanchor":"top","font":{"size":float(pa["title_size_value"])}})
 
     cols=list(fig['layout']['xaxis']['ticktext'])
     rows=list(fig['layout']['yaxis']['ticktext'])
     df_=pd.DataFrame({"i":range(len(rows))}, index=rows )
     df_=df_.sort_values(by=["i"], ascending=False)
-    df_=df_.drop(["i"], axis=1)    
+    df_=df_.drop(["i"], axis=1)
     df_=pd.merge(df_,tmp, how="left", left_index=True, right_index=True)
     df_=df_[cols]
 
@@ -402,7 +402,7 @@ def figure_defaults():
         "available_rows":[],\
         "title":'Heatmap',\
         "title_size":STANDARD_SIZES,\
-        "title_size_value":"10",\
+        "title_size_value":"16",\
         #"xticklabels":'.off',\
         #"yticklabels":".on",\
         "show_labels":["xticklabels", "yticklabels"],\
