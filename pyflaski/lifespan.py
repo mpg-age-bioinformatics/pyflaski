@@ -35,6 +35,30 @@ marker_dict={'point':'.',\
              'hline':'_'}
 
 def make_figure(df,pa):
+
+    pa_={}
+    for n in ["fig_width","fig_height"]:
+        if pa[n]:
+            pa_[n]=float(pa[n])
+        else:
+            pa_[n]=pa[n]
+
+
+    for a in ["left_axis", "right_axis", "upper_axis", "lower_axis"]:
+        if a in pa["show_axis"]:
+            pa_[a]=True
+        else:
+            pa_[a]=False
+
+    for a in ["tick_left_axis", "tick_right_axis", "tick_upper_axis", "tick_lower_axis"]:
+        if a in pa["show_ticks"]:
+            pa_[a]=True
+        else:
+            pa_[a]=False
+
+
+
+
     df_ls=df.copy()
     
     durations=df_ls[pa["xvals"]]
@@ -61,8 +85,8 @@ def make_figure(df,pa):
         df=df.reset_index(drop=True)
         df=df[["time","at_risk","removed","observed","censored","entrance","Kaplan Meier Estimate","Kaplan Meier Estimate_lower_0.95","Kaplan Meier Estimate_upper_0.95"]]
     
-        pa_={}
-        for arg in ["Conf_Interval","show_censors","ci_legend","ci_force_lines","left_axis", "right_axis" , "upper_axis", "lower_axis","tick_left_axis","tick_right_axis","tick_upper_axis","tick_lower_axis"]:
+        #pa_={}
+        for arg in ["Conf_Interval","show_censors","ci_legend","ci_force_lines"]:
             if pa[arg] in ["off", ".off"]:
                 pa_[arg]=False
             else:
@@ -300,7 +324,7 @@ def make_figure(df,pa):
                            labelrotation=float(pa["yticks_rotation"]), labelsize=float(pa["yticks_fontsize"]))
 
             if str(pa["grid_value"]) != "None":
-                pl.grid(True, which='both',axis=pa["grid_value"], color=pa_["grid_color_write"], linewidth=float(pa["grid_linewidth"]))
+                pl.grid(True, which='both',axis=pa["grid_value"], color=pa_["grid_color_write"], linewidth=float(pa["grid_linewidth"]), linestyle=pa["grid_linestyle_value"])
 
             if str(pa["x_lower_limit"]) != "" and str(pa["x_upper_limit"]) != "":       
                 pl.set_xlim(float(pa["x_lower_limit"]),float(pa["x_upper_limit"]))
@@ -397,14 +421,16 @@ def figure_defaults():
         "ylabel_size":STANDARD_SIZES,\
         "ylabels":"14",\
         "axis_line_width":"1.0",\
-        "left_axis":".on",\
-        "right_axis":".on",\
-        "upper_axis":".on",\
-        "lower_axis":".on",\
-        "tick_left_axis":".on" ,\
-        "tick_right_axis":".off",\
-        "tick_upper_axis":".off",\
-        "tick_lower_axis":".on",\
+        # "left_axis":".on",\
+        # "right_axis":".on",\
+        # "upper_axis":".on",\
+        # "lower_axis":".on",\
+        "show_axis":["left_axis", "right_axis", "upper_axis", "lower_axis"],\
+        "show_ticks":["tick_left_axis", "tick_right_axis", "tick_upper_axis", "tick_lower_axis"],\
+        # "tick_left_axis":".on" ,\
+        # "tick_right_axis":".off",\
+        # "tick_upper_axis":".off",\
+        # "tick_lower_axis":".on",\
         "ticks_direction":TICKS_DIRECTIONS,\
         "ticks_direction_value":TICKS_DIRECTIONS[1],\
         "ticks_length":"6.0",\
