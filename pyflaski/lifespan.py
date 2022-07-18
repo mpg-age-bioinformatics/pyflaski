@@ -1,4 +1,5 @@
 # from scipy import stats
+from tarfile import PAX_FIELDS
 import numpy as np
 import pandas as pd
 from lifelines import KaplanMeierFitter
@@ -9,30 +10,9 @@ from lifelines import CoxPHFitter
 from lifelines.statistics import logrank_test
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-import plotly.tools as tls 
+from plotly.graph_objs import *
+import plotly.graph_objs as go
 
-marker_dict={'point':'.',\
-             'pixel':',',\
-             'circle':'o',\
-             'triangle_down':'v',\
-             'triangle_up':'^',\
-             'triangle_left':'<',\
-	         'triangle_right':'>',\
-	         'tri_down': '1',\
-	         'tri_up': '2',\
-	         'tri_left': '3',\
-	         'tri_right': '4',\
-	         'square': 's',\
-	         'pentagon': 'p',\
-	         'star': '*',\
-	         'hexagon1': 'h',\
-	         'hexagon2': 'H',\
-	         'plus': '+',\
-	         'x': 'x',\
-	         'diamond': 'D',\
-             'thin_diamond':'d',\
-             'vline':'|',\
-             'hline':'_'}
 
 def make_figure(df,pa):
 
@@ -50,27 +30,121 @@ def make_figure(df,pa):
         else:
             pa_[a]=False
 
-    for a in ["tick_left_axis", "tick_right_axis", "tick_upper_axis", "tick_lower_axis"]:
+    for a in ["tick_x_axis","tick_y_axis"]:
         if a in pa["show_ticks"]:
             pa_[a]=True
         else:
             pa_[a]=False
 
-
-
+    for a in ["Conf_Interval","show_censors","ci_legend","ci_force_lines"]:
+        if a in pa["model_settings"]:
+            pa_[a]=True
+        else:
+            pa_[a]=False
 
     df_ls=df.copy()
     
     durations=df_ls[pa["xvals"]]
     event_observed=df_ls[pa["yvals"]]
 
-    km = KaplanMeierFitter() ## instantiate the class to create an object
+    ## UPDATE AXES ARGUMENTS 
+    fig = go.Figure()
+    fig.update_layout( width=pa_["fig_width"], height=pa_["fig_height"] )
 
-    pl=None
-    fig = plt.figure(frameon=False, figsize=(float(pa["fig_width"]),float(pa["fig_height"])))
+    fig.update_layout(
+            title={
+            'text': pa['title'],
+            'xanchor': 'left',
+            'yanchor': 'top' ,
+            "font": {"size": float(pa["titles"]), "color":"black"  } } )
+
+    fig.update_layout(
+            xaxis = dict(
+            title_text = pa["xlabel"],
+            title_font = {"size": int(pa["xlabels"]),"color":"black"}),
+            yaxis = dict(
+            title_text = pa["ylabel"],
+            title_font = {"size": int(pa["xlabels"]), "color":"black"} ) )
+
+    if ( not pa_["lower_axis"] ) & ( pa_["upper_axis"] ) :
+        fig.update_layout(xaxis={'side': 'top'})
+        pa_["lower_axis"]=True
+        pa_["upper_axis"]=False
+
+    if ( not pa_["left_axis"] ) & ( pa_["right_axis"] ) :
+        fig.update_layout(yaxis={'side': 'right'})
+        pa_["left_axis"]=True
+        pa_["right_axis"]=False
+    
+    fig.update_xaxes(zeroline=False, showline=pa_["lower_axis"], linewidth=float(pa["axis_line_width"]), linecolor='black', mirror=pa_["upper_axis"])
+    fig.update_yaxes(zeroline=False, showline=pa_["left_axis"], linewidth=float(pa["axis_line_width"]), linecolor='black', mirror=pa_["right_axis"])
+
+
+    if pa_["tick_x_axis"] :
+        fig.update_xaxes(ticks=pa["ticks_direction_value"], tickwidth=float(pa["axis_line_width"]), tickcolor='black', ticklen=float(pa["ticks_length"]) )
+    else:
+        fig.update_xaxes(ticks="", tickwidth=float(pa["axis_line_width"]), tickcolor='black', ticklen=float(pa["ticks_length"]) )
+
+    if pa_["tick_y_axis"] :
+        fig.update_yaxes(ticks=pa["ticks_direction_value"], tickwidth=float(pa["axis_line_width"]), tickcolor='black', ticklen=float(pa["ticks_length"]) )
+    else:
+        fig.update_yaxes(ticks="", tickwidth=float(pa["axis_line_width"]), tickcolor='black', ticklen=float(pa["ticks_length"]) )
+
+    
+    fig.update_xaxes(tickangle=float(pa["xticks_rotation"]), tickfont=dict(size=float(pa["xticks_fontsize"]), color="black" ))
+    fig.update_yaxes(tickangle=float(pa["yticks_rotation"]), tickfont=dict(size=float(pa["yticks_fontsize"]), color="black" ))
+
+
+    if ( pa["x_lower_limit"] ) and ( pa["x_upper_limit"] ) :
+        xmin=float(pa["x_lower_limit"])
+        xmax=float(pa["x_upper_limit"])
+        fig.update_xaxes(range=[xmin, xmax])
+
+    if ( pa["y_lower_limit"] ) and ( pa["y_upper_limit"] ) :
+        ymin=float(pa["y_lower_limit"])
+        ymax=float(pa["y_upper_limit"])
+        fig.update_yaxes(range=[ymin, ymax])
+
+
+    if pa["grid_value"] :
+        if str(pa["grid_color_text"]) != "":
+            grid_color=pa["grid_color_text"]
+        else:
+            grid_color=pa["grid_color_value"]
+        
+        print(grid_color)
+
+        if pa["grid_value"] in ["both","x"]:
+            fig.update_xaxes(showgrid=True, gridwidth=float(pa["grid_linewidth"]), gridcolor=grid_color) #griddash=pa["grid_linestyle_value"]
+        else:
+            fig.update_xaxes(showgrid=False, gridwidth=float(pa["grid_linewidth"]), gridcolor=grid_color) #griddash=pa["grid_linestyle_value"]
+        
+        if pa["grid_value"] in ["both","y"]:
+            fig.update_yaxes(showgrid=True, gridwidth=float(pa["grid_linewidth"]), gridcolor=grid_color,) #griddash=pa["grid_linestyle_value"]
+        else:
+            fig.update_yaxes(showgrid=False, gridwidth=float(pa["grid_linewidth"]), gridcolor=grid_color) #griddash=pa["grid_linestyle_value"]
+    else:
+        fig.update_xaxes(showgrid=False)
+        fig.update_yaxes(showgrid=False)
+
+    fig.update_layout(template='plotly_white')
+
+    # if pa["maxxticks"] :
+    #     fig.update_xaxes(nticks=int(pa["maxxticks"]))
+
+    # if pa["maxyticks"] :
+    #     fig.update_yaxes(nticks=int(pa["maxyticks"]))
+
+   
+
+
+   
+
+
+    ## instantiate the class to create an object
+    km = KaplanMeierFitter() 
 
     ## Fit the data into the model
-
     if str(pa["groups_value"]) == "None":
         km.fit(durations, event_observed,label='Kaplan Meier Estimate')
 
@@ -85,12 +159,7 @@ def make_figure(df,pa):
         df=df.reset_index(drop=True)
         df=df[["time","at_risk","removed","observed","censored","entrance","Kaplan Meier Estimate","Kaplan Meier Estimate_lower_0.95","Kaplan Meier Estimate_upper_0.95"]]
     
-        #pa_={}
-        for arg in ["Conf_Interval","show_censors","ci_legend","ci_force_lines"]:
-            if pa[arg] in ["off", ".off"]:
-                pa_[arg]=False
-            else:
-                pa_[arg]=True
+        print(df)
 
         if str(pa["markerc_write"]) != "":
             pa_["marker_fc"]=pa["markerc_write"]
@@ -102,52 +171,64 @@ def make_figure(df,pa):
         else:
             pa_["marker_ec"]=pa["edgecolor"]
 
-        if str(pa["grid_color_text"]) != "":
-            pa_["grid_color_write"]=pa["grid_color_text"]
-        else:
-            pa_["grid_color_write"]=pa["grid_color_value"]
+       
+        fig.add_trace(go.Scatter(
+            x=km.survival_function_.index, y=km.survival_function_['Kaplan Meier Estimate'],
+            line=dict(shape='hv', width=3, color='rgb(31, 119, 180)'),
+            showlegend=False
+        ))
 
-        pl=km.plot(show_censors=pa_["show_censors"], \
-                censor_styles={"marker":marker_dict[pa["censor_marker_value"]], "markersize":float(pa["censor_marker_size_val"]), "markeredgecolor":pa_["marker_ec"], "markerfacecolor":pa_["marker_fc"], "alpha":float(pa["marker_alpha"])}, \
-               ci_alpha=float(pa["ci_alpha"]), \
-               ci_force_lines=pa_["ci_force_lines"], \
-               ci_show=pa_["Conf_Interval"], \
-               ci_legend=pa_["ci_legend"], \
-               linestyle=pa["linestyle_value"], \
-               linewidth=float(pa["linewidth_write"]), \
-               color=pa["line_color_value"])
+        fig.add_trace(go.Scatter(
+            x=km.confidence_interval_.index, 
+            y=km.confidence_interval_['Kaplan Meier Estimate_upper_0.95'],
+            line=dict(shape='hv', width=0),
+            showlegend=False,
+        ))
 
-        pl.spines['right'].set_visible(pa_["right_axis"])
-        pl.spines['top'].set_visible(pa_["upper_axis"])
-        pl.spines['left'].set_visible(pa_["left_axis"])
-        pl.spines['bottom'].set_visible(pa_["lower_axis"])
+        fig.add_trace(go.Scatter(
+            x=km.confidence_interval_.index,
+            y=km.confidence_interval_['Kaplan Meier Estimate_lower_0.95'],
+            line=dict(shape='hv', width=0),
+            fill='tonexty',
+            fillcolor='rgba(31, 119, 180, 0.4)',
+            showlegend=False
+        ))
 
-        pl.spines['right'].set_linewidth(pa["axis_line_width"])
-        pl.spines['left'].set_linewidth(pa["axis_line_width"])
-        pl.spines['top'].set_linewidth(pa["axis_line_width"])
-        pl.spines['bottom'].set_linewidth(pa["axis_line_width"])
+        fig.show()
+
         
-        pl.tick_params(axis="both", direction=pa["ticks_direction_value"], length=float(pa["ticks_length"]))
 
-        pl.tick_params(axis='x',which='both',bottom=pa_["tick_lower_axis"],top=pa_["tick_upper_axis"],labelbottom=pa_["lower_axis"], 
-                       labelrotation=float(pa["xticks_rotation"]), labelsize=float(pa["xticks_fontsize"]))
+        # pl.spines['right'].set_visible(pa_["right_axis"])
+        # pl.spines['top'].set_visible(pa_["upper_axis"])
+        # pl.spines['left'].set_visible(pa_["left_axis"])
+        # pl.spines['bottom'].set_visible(pa_["lower_axis"])
+
+        # pl.spines['right'].set_linewidth(pa["axis_line_width"])
+        # pl.spines['left'].set_linewidth(pa["axis_line_width"])
+        # pl.spines['top'].set_linewidth(pa["axis_line_width"])
+        # pl.spines['bottom'].set_linewidth(pa["axis_line_width"])
+        
+        # pl.tick_params(axis="both", direction=pa["ticks_direction_value"], length=float(pa["ticks_length"]))
+
+        # pl.tick_params(axis='x',which='both',bottom=pa_["tick_lower_axis"],top=pa_["tick_upper_axis"],labelbottom=pa_["lower_axis"], 
+        #                labelrotation=float(pa["xticks_rotation"]), labelsize=float(pa["xticks_fontsize"]))
                        
-        pl.tick_params(axis='y',which='both',left=pa_["tick_left_axis"],right=pa_["tick_right_axis"],labelleft=pa_["left_axis"], 
-                       labelrotation=float(pa["yticks_rotation"]), labelsize=float(pa["yticks_fontsize"]))
+        # pl.tick_params(axis='y',which='both',left=pa_["tick_left_axis"],right=pa_["tick_right_axis"],labelleft=pa_["left_axis"], 
+        #                labelrotation=float(pa["yticks_rotation"]), labelsize=float(pa["yticks_fontsize"]))
 
-        if str(pa["grid_value"]) != "None":
-            pl.grid(True, which='both',axis=pa["grid_value"], color=pa_["grid_color_write"], linewidth=float(pa["grid_linewidth"]))
+        # if str(pa["grid_value"]) != "None":
+        #     pl.grid(True, which='both',axis=pa["grid_value"], color=pa_["grid_color_write"], linewidth=float(pa["grid_linewidth"]))
                        
-        if str(pa["x_lower_limit"]) != "" and str(pa["x_upper_limit"]) != "":
-            pl.set_xlim(float(pa["x_lower_limit"]),float(pa["x_upper_limit"]))
-        if str(pa["y_lower_limit"]) != "" and str(pa["y_upper_limit"]) != "":
-            pl.set_ylim(float(pa["y_lower_limit"]),float(pa["y_upper_limit"])) 
+        # if str(pa["x_lower_limit"]) != "" and str(pa["x_upper_limit"]) != "":
+        #     pl.set_xlim(float(pa["x_lower_limit"]),float(pa["x_upper_limit"]))
+        # if str(pa["y_lower_limit"]) != "" and str(pa["y_upper_limit"]) != "":
+        #     pl.set_ylim(float(pa["y_lower_limit"]),float(pa["y_upper_limit"])) 
 
-        pl.set_title(pa["title"], fontdict={'fontsize':float(pa['titles'])})
-        pl.set_xlabel(pa["xlabel"], fontdict={'fontsize':float(pa['xlabels'])})
-        pl.set_ylabel(pa["ylabel"], fontdict={'fontsize':float(pa['ylabels'])})
+        # pl.set_title(pa["title"], fontdict={'fontsize':float(pa['titles'])})
+        # pl.set_xlabel(pa["xlabel"], fontdict={'fontsize':float(pa['xlabels'])})
+        # pl.set_ylabel(pa["ylabel"], fontdict={'fontsize':float(pa['ylabels'])})
 
-        return df, pl
+        return df, fig
 
     elif str(pa["groups_value"]) != "None":
 
@@ -206,6 +287,9 @@ def make_figure(df,pa):
 
         tmp=[]
         
+        #fig = go.Figure()
+        #fig.update_layout( width=pa_["fig_width"], height=pa_["fig_height"] )
+
         for cond in pa["list_of_groups"]:
             df_tmp=df_ls.loc[df_ls[pa["groups_value"]] == cond]
 
@@ -232,7 +316,9 @@ def make_figure(df,pa):
 
             df=reduce(lambda df1,df2: pd.merge(df1,df2,on='time'), tmp)
 
-
+            print(df)
+            
+            ## Figure starting here
             PA_=[ g for g in pa["groups_settings"] if g["name"]==cond ][0]
 
             if str(PA_["linecolor_write"]) != "":
@@ -240,10 +326,24 @@ def make_figure(df,pa):
             else:
                 linecolor=PA_["line_color_value"]
 
-            if str(PA_["linestyle_write"]) != "":
-                linestyle=PA_["linestyle_write"]
+
+            if str(PA_["ci_linecolor_write"]) != "":
+                ci_linecolor=PA_["ci_linecolor_write"]
             else:
-                linestyle=PA_["linestyle_value"]
+                ci_linecolor=PA_["ci_line_color_value"]
+
+            CI_alpha=PA_["ci_alpha"]
+            markerAlpha=PA_["marker_alpha"]
+
+            from matplotlib import colors
+            ci_color_rgba="rgba("+str(colors.to_rgba(ci_linecolor)[0])+","+str(colors.to_rgba(ci_linecolor)[1])+","+str(colors.to_rgba(ci_linecolor)[2])+","+CI_alpha+")"
+            #print(ci_color_rgba)
+
+            linestyle=PA_["linestyle_value"]
+            ci_linestyle=PA_["ci_linestyle_value"]
+
+            linewidth=float(PA_["linewidth_write"])
+            ci_linewidth=float(PA_["ci_linewidth_write"])
             
             if str(PA_["markerc_write"]) != "":
                 markerColor=PA_["markerc_write"]
@@ -255,98 +355,229 @@ def make_figure(df,pa):
             else:
                 edgeColor=PA_["edgecolor"]
 
-            if PA_["show_censors"] in ["off", ".off"]:
-                showCensors=False
-            else:
-                showCensors=True
-
-            if PA_["Conf_Interval"] in ["off", ".off"]:
-                ConfidenceInterval=False
-            else:
-                ConfidenceInterval=True
-
-            if PA_["ci_legend"] in ["off", ".off"]:
-                CI_legend=False
-            else:
-                CI_legend=True
-
-            if PA_["ci_force_lines"] in ["off", ".off"]:
-                CI_lines=False
-            else:
-                CI_lines=True
-
-            linewidth=PA_["linewidth_write"]
-            edgeLineWidth=PA_["edge_linewidth"]
-            markerSize=PA_["censor_marker_size_val"]
-
-            markerAlpha=PA_["marker_alpha"]
-            CI_alpha=PA_["ci_alpha"]
-            markerVal=PA_["censor_marker_value"]
-
-            pa_={}
-            for arg in ["left_axis", "right_axis" , "upper_axis", "lower_axis","tick_left_axis","tick_right_axis","tick_upper_axis","tick_lower_axis"]:
-                if pa[arg] in ["off", ".off"]:
-                    pa_[arg]=False
+            for a in ["Conf_Interval","show_censors","ci_legend","ci_force_lines"]:
+                if a in PA_["model_settings"]:
+                    PA_[a]=True
                 else:
-                    pa_[arg]=True
+                    PA_[a]=False
 
-            if str(pa["grid_color_text"]) != "":
-                pa_["grid_color_write"]=pa["grid_color_text"]
+            
+            if PA_["ci_legend"]:
+                CI_legend=True
             else:
-                pa_["grid_color_write"]=pa["grid_color_value"]
+                CI_legend=False
+
+            edgeLineWidth=float(PA_["edge_linewidth"])
+            markerSize=float(PA_["censor_marker_size_val"])
+            markerShape=PA_["censor_marker_value"]
+
+            print(PA_)
+            ## Main line 'rgb(31, 119, 180)'
+            fig.add_trace(go.Scatter(
+                x=km.survival_function_.index, y=km.survival_function_[cond],
+                line=dict(shape='hv', width=linewidth, color=linecolor,  dash=linestyle),
+                showlegend=CI_legend,
+                name=cond
+            ))
+
+            if PA_["ci_force_lines"] and PA_["Conf_Interval"]:
+
+                ## Adding line for upper conf interval
+                fig.add_trace(go.Scatter(
+                x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_upper_0.95"],
+                line=dict(shape='hv', width=linewidth, color=linecolor,  dash=linestyle),
+                showlegend=CI_legend
+                ))
+
+                ## Adding line for lower conf interval
+                fig.add_trace(go.Scatter(
+                x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_lower_0.95"],
+                line=dict(shape='hv', width=linewidth, color=linecolor,  dash=linestyle),
+                showlegend=CI_legend
+                ))
+
+                ## Adding shade for upper conf interval
+                fig.add_trace(go.Scatter(
+                    x=km.confidence_interval_.index, 
+                    y=km.confidence_interval_[cond+"_upper_0.95"],
+                    line=dict(shape='hv', width=0),
+                    showlegend=CI_legend,
+                ))
+
+                ## Adding shade for lower conf interval
+                fig.add_trace(go.Scatter(
+                    x=km.confidence_interval_.index,
+                    y=km.confidence_interval_[cond+"_lower_0.95"],
+                    line=dict(shape='hv', width=0),
+                    fill='tonexty',
+                    fillcolor=ci_color_rgba,
+                    showlegend=False
+                ))
+
+            elif PA_["ci_force_lines"]:
+                ## Adding line for upper conf interval
+                fig.add_trace(go.Scatter(
+                x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_upper_0.95"],
+                line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
+                showlegend=CI_legend
+                ))
+
+                ## Adding line for lower conf interval
+                fig.add_trace(go.Scatter(
+                x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_lower_0.95"],
+                line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
+                showlegend=CI_legend
+                ))
+
+            elif PA_["Conf_Interval"]:
+                ## Adding shade for upper conf interval
+                fig.add_trace(go.Scatter(
+                    x=km.confidence_interval_.index, 
+                    y=km.confidence_interval_[cond+"_upper_0.95"],
+                    line=dict(shape='hv', width=0),
+                    showlegend=CI_legend,
+                ))
+
+                ## Adding shade for lower conf interval
+                fig.add_trace(go.Scatter(
+                    x=km.confidence_interval_.index,
+                    y=km.confidence_interval_[cond+"_lower_0.95"],
+                    line=dict(shape='hv', width=0),
+                    fill='tonexty',
+                    fillcolor=ci_color_rgba,
+                    showlegend=False
+                ))
+
+            if PA_["show_censors"]:
+
+                censors=df.loc[df[cond+"_censored"] > 0, ["time", cond+"_KMestimate"]]
+                print(censors)
+
+                censors_x=censors["time"].tolist()
+                censors_y=censors[cond+"_KMestimate"].tolist()
+            
+                fig.add_trace(go.Scatter(x=censors_x, y=censors_y, 
+                        mode='markers', 
+                        marker=dict(symbol=markerShape,\
+                                color=markerColor,
+                                size=markerSize,
+                                opacity=float(markerAlpha),
+                                line=dict(
+                                    color=edgeColor,
+                                    width=edgeLineWidth)), \
+                        showlegend=False,\
+                        name='TMP'))
+
+
+        return df, fig, cph_coeff, cph_stats
         
-            pl=km.plot(show_censors=showCensors, \
-                censor_styles={"marker":marker_dict[markerVal], "markersize":float(markerSize), "markeredgecolor":edgeColor, "markerfacecolor":markerColor, "alpha":float(markerAlpha), "mew":float(edgeLineWidth)}, \
-                ci_alpha=float(CI_alpha), \
-                ci_force_lines=CI_lines, \
-                ci_show=ConfidenceInterval, \
-                ci_legend=CI_legend, \
-                linestyle=linestyle, \
-                linewidth=float(linewidth), \
-                color=linecolor)
+        
 
-            pl.spines['right'].set_visible(pa_["right_axis"])
-            pl.spines['top'].set_visible(pa_["upper_axis"])
-            pl.spines['left'].set_visible(pa_["left_axis"])
-            pl.spines['bottom'].set_visible(pa_["lower_axis"])
 
-            pl.spines['right'].set_linewidth(pa["axis_line_width"])
-            pl.spines['left'].set_linewidth(pa["axis_line_width"])
-            pl.spines['top'].set_linewidth(pa["axis_line_width"])
-            pl.spines['bottom'].set_linewidth(pa["axis_line_width"])
 
-            pl.tick_params(axis="both", direction=pa["ticks_direction_value"], length=float(pa["ticks_length"]))
+   
+    
 
-            pl.tick_params(axis='x',which='both',bottom=pa_["tick_lower_axis"],top=pa_["tick_upper_axis"],labelbottom=pa_["lower_axis"], 
-                           labelrotation=float(pa["xticks_rotation"]), labelsize=float(pa["xticks_fontsize"]))
+    fig.show()
+
+        
+            
+           
+
+            # pa_={}
+            # for arg in ["left_axis", "right_axis" , "upper_axis", "lower_axis","tick_left_axis","tick_right_axis","tick_upper_axis","tick_lower_axis"]:
+            #     if pa[arg] in ["off", ".off"]:
+            #         pa_[arg]=False
+            #     else:
+            #         pa_[arg]=True
+
+            # if str(pa["grid_color_text"]) != "":
+            #     pa_["grid_color_write"]=pa["grid_color_text"]
+            # else:
+            #     pa_["grid_color_write"]=pa["grid_color_value"]
+        
+            # pl=km.plot(show_censors=showCensors, \
+            #     censor_styles={"marker":marker_dict[markerVal], "markersize":float(markerSize), "markeredgecolor":edgeColor, "markerfacecolor":markerColor, "alpha":float(markerAlpha), "mew":float(edgeLineWidth)}, \
+            #     ci_alpha=float(CI_alpha), \
+            #     ci_force_lines=CI_lines, \
+            #     ci_show=ConfidenceInterval, \
+            #     ci_legend=CI_legend, \
+            #     linestyle=linestyle, \
+            #     linewidth=float(linewidth), \
+            #     color=linecolor)
+            # print("test1")
+            # pl1=km.plot()
+            # pl2=plt.gcf()
+
+            # print("test2")
+            # pl = tls.mpl_to_plotly(pl2, resize=True)
+            #pl=py.iplot(pl3)
+
+            # pl.spines['right'].set_visible(pa_["right_axis"])
+            # pl.spines['top'].set_visible(pa_["upper_axis"])
+            # pl.spines['left'].set_visible(pa_["left_axis"])
+            # pl.spines['bottom'].set_visible(pa_["lower_axis"])
+
+            # pl.spines['right'].set_linewidth(pa["axis_line_width"])
+            # pl.spines['left'].set_linewidth(pa["axis_line_width"])
+            # pl.spines['top'].set_linewidth(pa["axis_line_width"])
+            # pl.spines['bottom'].set_linewidth(pa["axis_line_width"])
+
+            # pl.tick_params(axis="both", direction=pa["ticks_direction_value"], length=float(pa["ticks_length"]))
+
+            # pl.tick_params(axis='x',which='both',bottom=pa_["tick_lower_axis"],top=pa_["tick_upper_axis"],labelbottom=pa_["lower_axis"], 
+            #                labelrotation=float(pa["xticks_rotation"]), labelsize=float(pa["xticks_fontsize"]))
        
-            pl.tick_params(axis='y',which='both',left=pa_["tick_left_axis"],right=pa_["tick_right_axis"],labelleft=pa_["left_axis"], 
-                           labelrotation=float(pa["yticks_rotation"]), labelsize=float(pa["yticks_fontsize"]))
+            # pl.tick_params(axis='y',which='both',left=pa_["tick_left_axis"],right=pa_["tick_right_axis"],labelleft=pa_["left_axis"], 
+            #                labelrotation=float(pa["yticks_rotation"]), labelsize=float(pa["yticks_fontsize"]))
 
-            if str(pa["grid_value"]) != "None":
-                pl.grid(True, which='both',axis=pa["grid_value"], color=pa_["grid_color_write"], linewidth=float(pa["grid_linewidth"]), linestyle=pa["grid_linestyle_value"])
+            # if str(pa["grid_value"]) != "None":
+            #     pl.grid(True, which='both',axis=pa["grid_value"], color=pa_["grid_color_write"], linewidth=float(pa["grid_linewidth"]), linestyle=pa["grid_linestyle_value"])
 
-            if str(pa["x_lower_limit"]) != "" and str(pa["x_upper_limit"]) != "":       
-                pl.set_xlim(float(pa["x_lower_limit"]),float(pa["x_upper_limit"]))
-            if str(pa["y_lower_limit"]) != "" and str(pa["y_upper_limit"]) != "":  
-                pl.set_ylim(float(pa["y_lower_limit"]),float(pa["y_upper_limit"]))    
+            # if str(pa["x_lower_limit"]) != "" and str(pa["x_upper_limit"]) != "":       
+            #     pl.set_xlim(float(pa["x_lower_limit"]),float(pa["x_upper_limit"]))
+            # if str(pa["y_lower_limit"]) != "" and str(pa["y_upper_limit"]) != "":  
+            #     pl.set_ylim(float(pa["y_lower_limit"]),float(pa["y_upper_limit"]))    
 
-            pl.set_title(pa["title"], fontdict={'fontsize':float(pa['titles'])})
-            pl.set_xlabel(pa["xlabel"], fontdict={'fontsize':float(pa['xlabels'])})
-            pl.set_ylabel(pa["ylabel"], fontdict={'fontsize':float(pa['ylabels'])})
+            # pl.set_title(pa["title"], fontdict={'fontsize':float(pa['titles'])})
+            # pl.set_xlabel(pa["xlabel"], fontdict={'fontsize':float(pa['xlabels'])})
+            # pl.set_ylabel(pa["ylabel"], fontdict={'fontsize':float(pa['ylabels'])})
 
-        return df, pl, cph_coeff, cph_stats
+        #return df, fig, cph_coeff, cph_stats
         
 
-ALLOWED_MARKERS=['point','pixel','circle','triangle_down','triangle_up','triangle_left','triangle_right','tri_down','tri_up',
-'tri_left','tri_right','square','pentagon','star','hexagon1','hexagon2','plus','x','diamond','thin_diamond','vline','hline']
+ALLOWED_MARKERS=['circle', 'circle-open', 'circle-dot', 'circle-open-dot', 'square', 'square-open', 
+'square-dot', 'square-open-dot', 'diamond', 'diamond-open', 'diamond-dot', 'diamond-open-dot', 
+'cross', 'cross-open', 'cross-dot', 'cross-open-dot', 'x', 'x-open', 'x-dot', 'x-open-dot', 
+'triangle-up', 'triangle-up-open', 'triangle-up-dot', 'triangle-up-open-dot', 'triangle-down', 
+'triangle-down-open', 'triangle-down-dot', 'triangle-down-open-dot', 'triangle-left', 'triangle-left-open', 
+'triangle-left-dot', 'triangle-left-open-dot', 'triangle-right', 'triangle-right-open', 'triangle-right-dot', 
+'triangle-right-open-dot', 'triangle-ne', 'triangle-ne-open', 'triangle-ne-dot', 'triangle-ne-open-dot', 
+'triangle-se', 'triangle-se-open', 'triangle-se-dot', 'triangle-se-open-dot', 'triangle-sw', 
+'triangle-sw-open', 'triangle-sw-dot', 'triangle-sw-open-dot', 'triangle-nw', 'triangle-nw-open',
+'triangle-nw-dot', 'triangle-nw-open-dot', 'pentagon', 'pentagon-open', 'pentagon-dot', 'pentagon-open-dot', 
+'hexagon', 'hexagon-open', 'hexagon-dot', 'hexagon-open-dot', 'hexagon2', 'hexagon2-open', 'hexagon2-dot',
+'hexagon2-open-dot', 'octagon', 'octagon-open', 'octagon-dot', 'octagon-open-dot', 'star', 'star-open', 
+'star-dot', 'star-open-dot', 'hexagram', 'hexagram-open', 'hexagram-dot', 'hexagram-open-dot', 
+'star-triangle-up', 'star-triangle-up-open', 'star-triangle-up-dot', 'star-triangle-up-open-dot', 
+'star-triangle-down', 'star-triangle-down-open', 'star-triangle-down-dot', 'star-triangle-down-open-dot', 
+'star-square', 'star-square-open', 'star-square-dot', 'star-square-open-dot', 'star-diamond', 
+'star-diamond-open', 'star-diamond-dot', 'star-diamond-open-dot', 'diamond-tall', 'diamond-tall-open', 
+'diamond-tall-dot', 'diamond-tall-open-dot', 'diamond-wide', 'diamond-wide-open', 'diamond-wide-dot', 
+'diamond-wide-open-dot', 'hourglass', 'hourglass-open', 'bowtie', 'bowtie-open', 'circle-cross', 
+'circle-cross-open', 'circle-x', 'circle-x-open', 'square-cross', 'square-cross-open', 'square-x', 
+'square-x-open', 'diamond-cross', 'diamond-cross-open', 'diamond-x', 'diamond-x-open', 'cross-thin', 
+'cross-thin-open', 'x-thin', 'x-thin-open', 'asterisk', 'asterisk-open', 'hash', 'hash-open', 
+'hash-dot', 'hash-open-dot', 'y-up', 'y-up-open', 'y-down', 'y-down-open', 'y-left', 'y-left-open', 
+'y-right', 'y-right-open', 'line-ew', 'line-ew-open', 'line-ns', 'line-ns-open', 'line-ne', 
+'line-ne-open', 'line-nw', 'line-nw-open']
 STANDARD_SIZES=[ str(i) for i in list(range(101)) ]
 STANDARD_COLORS=["blue","green","red","cyan","magenta","yellow","black","white",None]
-LINE_STYLES=["solid","dashed","dashdot","dotted"]
+LINE_STYLES=["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"]
 HIST_TYPES=['bar', 'barstacked', 'step',  'stepfilled']
 STANDARD_ORIENTATIONS=['vertical','horizontal']
 STANDARD_ALIGNMENTS=['left','right','mid']
-TICKS_DIRECTIONS=["in","out", "inout"]
+TICKS_DIRECTIONS=["inside","outside"]
 LEGEND_LOCATIONS=['best','upper right','upper left','lower left','lower right','right','center left','center right','lower center','upper center','center']
 LEGEND_FONTSIZES=['xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large']
 MODES=["expand",None]
@@ -359,8 +590,8 @@ def figure_defaults():
         dict: A dictionary of the style { "argument":"value"}
     """
     plot_arguments={
-        "fig_width":"8.0",\
-        "fig_height":"6.0",\
+        "fig_width":"800",\
+        "fig_height":"600",\
         "title":'Survival Analysis',\
         "title_size":STANDARD_SIZES,\
         "titles":"20",\
@@ -374,44 +605,49 @@ def figure_defaults():
         "groups_settings":[],\
         "censors_col":["None"],\
         "censors_val":"",\
-        "Conf_Interval":".off",\
-        "show_censors":".off",\
-        "ci_legend":".off",\
-        "ci_force_lines":".off",\
+        "model_settings":["Conf_Interval", "show_censors", "ci_legend", "ci_force_lines"],\
+        # "Conf_Interval":".off",\
+        # "show_censors":".off",\
+        # "ci_legend":".off",\
+        # "ci_force_lines":".off",\
         "censor_marker":ALLOWED_MARKERS,\
         "censor_marker_value":"x",\
         "censor_marker_size":STANDARD_SIZES,\
         "censor_marker_size_val":"4",\
-        "censor_marker_size_cols":["select a column.."], \
-        "censor_marker_size_col":"select a column..", \
+        #"censor_marker_size_cols":["select a column.."], \
+        #"censor_marker_size_col":"select a column..", \
         "marker_color":STANDARD_COLORS,\
         "markerc":"black",\
-        "markerc_cols":["select a column.."], \
-        "markerc_col":"select a column..", \
+        #"markerc_cols":["select a column.."], \
+        #"markerc_col":"select a column..", \
         "markerc_write":"",\
         "ci_alpha":"0.3",\
+        "ci_linewidth_write":"1.0",\
+        "ci_linestyle_value":"solid",\
+        "ci_line_color_value":"blue",\
+        "ci_linecolor_write":"",\
         "colors":STANDARD_COLORS,\
         "linestyles":LINE_STYLES,\
         "linestyle_value":"solid",\
-        "linestyle_cols":["select a column.."],\
-        "linestyle_col":"select a column..",\
+        #"linestyle_cols":["select a column.."],\
+        #"linestyle_col":"select a column..",\
         "linestyle_write":"", \
-        "linewidth_cols":["select a column.."],\
-        "linewidth_col":"select a column..",\
+        #"linewidth_cols":["select a column.."],\
+        #"linewidth_col":"select a column..",\
         "linewidth_write":"1.0",\
         "line_colors":STANDARD_COLORS,\
         "line_color_value":"blue",\
-        "linecolor_cols":["select a column.."],\
-        "linecolor_col":"select a column..",\
+        #"linecolor_cols":["select a column.."],\
+        #"linecolor_col":"select a column..",\
         "linecolor_write":"",\
         "edge_linewidths":STANDARD_SIZES,\
         "edge_linewidth":"1",\
-        "edge_linewidth_cols":["select a column.."],\
-        "edge_linewidth_col":"select a column..",\
+        #"edge_linewidth_cols":["select a column.."],\
+        #"edge_linewidth_col":"select a column..",\
         "edge_colors":STANDARD_COLORS,\
         "edgecolor":"black",\
-        "edgecolor_cols":["select a column.."], \
-        "edgecolor_col":"select a column..", \
+        #"edgecolor_cols":["select a column.."], \
+        #"edgecolor_col":"select a column..", \
         "edgecolor_write":"",\
         "marker_alpha":"1",\
         "xlabel":"Time",\
@@ -426,7 +662,8 @@ def figure_defaults():
         # "upper_axis":".on",\
         # "lower_axis":".on",\
         "show_axis":["left_axis", "right_axis", "upper_axis", "lower_axis"],\
-        "show_ticks":["tick_left_axis", "tick_right_axis", "tick_upper_axis", "tick_lower_axis"],\
+        #"show_ticks":["tick_left_axis", "tick_right_axis", "tick_upper_axis", "tick_lower_axis"],\
+        "show_ticks":["tick_x_axis","tick_y_axis"],\
         # "tick_left_axis":".on" ,\
         # "tick_right_axis":".off",\
         # "tick_upper_axis":".off",\
@@ -449,8 +686,8 @@ def figure_defaults():
         "grid_color_text":"",\
         "grid_colors":STANDARD_COLORS,\
         "grid_color_value":"black",\
-        "grid_linestyle":['-', '--', '-.', ':'],\
-        "grid_linestyle_value":'--',\
+        "grid_linestyle":LINE_STYLES,\
+        "grid_linestyle_value":'solid',\
         "grid_linewidth":"1",\
         "grid_alpha":"0.1",\
         "download_format":["tsv","xlsx"],\
