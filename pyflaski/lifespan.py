@@ -64,7 +64,7 @@ def make_figure(df,pa):
             title_font = {"size": int(pa["xlabels"]),"color":"black"}),
             yaxis = dict(
             title_text = pa["ylabel"],
-            title_font = {"size": int(pa["xlabels"]), "color":"black"} ) )
+            title_font = {"size": int(pa["ylabels"]), "color":"black"} ) )
 
     if ( not pa_["lower_axis"] ) & ( pa_["upper_axis"] ) :
         fig.update_layout(xaxis={'side': 'top'})
@@ -112,7 +112,6 @@ def make_figure(df,pa):
         else:
             grid_color=pa["grid_color_value"]
         
-        print(grid_color)
 
         if pa["grid_value"] in ["both","x"]:
             fig.update_xaxes(showgrid=True, gridwidth=float(pa["grid_linewidth"]), gridcolor=grid_color) #griddash=pa["grid_linestyle_value"]
@@ -128,17 +127,6 @@ def make_figure(df,pa):
         fig.update_yaxes(showgrid=False)
 
     fig.update_layout(template='plotly_white')
-
-    # if pa["maxxticks"] :
-    #     fig.update_xaxes(nticks=int(pa["maxxticks"]))
-
-    # if pa["maxyticks"] :
-    #     fig.update_yaxes(nticks=int(pa["maxyticks"]))
-
-   
-
-
-   
 
 
     ## instantiate the class to create an object
@@ -159,74 +147,160 @@ def make_figure(df,pa):
         df=df.reset_index(drop=True)
         df=df[["time","at_risk","removed","observed","censored","entrance","Kaplan Meier Estimate","Kaplan Meier Estimate_lower_0.95","Kaplan Meier Estimate_upper_0.95"]]
     
-        print(df)
+        ## Line arguments
+        linewidth=float(pa["linewidth_write"])
+        linestyle=pa["linestyle_value"]
+        
+        if str(pa["linecolor_write"]) != "":
+            linecolor=pa["linecolor_write"]
+        else:
+            linecolor=pa["line_color_value"]
 
+        ## Confidence Interval arguments
+        ci_linewidth=float(pa["ci_linewidth_write"])
+        ci_linestyle=pa["ci_linestyle_value"]
+        
+        CI_alpha=pa["ci_alpha"]
+
+        if str(pa["ci_linecolor_write"]) != "":
+            ci_linecolor=pa["ci_linecolor_write"]
+            ci_color_rgba=ci_linecolor.strip(")")+","+str(CI_alpha)+")"
+            ci_color_rgba=ci_color_rgba.replace("rgb","rgba")
+        else:
+            ci_linecolor=pa["ci_line_color_value"]
+            from matplotlib import colors
+            ci_color_rgba="rgba("+str(colors.to_rgba(ci_linecolor)[0])+","+str(colors.to_rgba(ci_linecolor)[1])+","+str(colors.to_rgba(ci_linecolor)[2])+","+CI_alpha+")"
+
+        if pa_["ci_legend"]:
+            CI_legend=True
+        else:
+            CI_legend=False
+
+        ## Censors arguments
+        markerShape=pa["censor_marker_value"]
+        markerSize=float(pa["censor_marker_size_val"])
+        edgeLineWidth=float(pa["edge_linewidth"])
+        
         if str(pa["markerc_write"]) != "":
-            pa_["marker_fc"]=pa["markerc_write"]
+            markerColor=pa["markerc_write"]
         else:
-            pa_["marker_fc"]=pa["markerc"]
-
+            markerColor=pa["markerc"]
+        
+        markerAlpha=pa["marker_alpha"]
+        
         if str(pa["edgecolor_write"]) != "":
-            pa_["marker_ec"]=pa["edgecolor_write"]
+            edgeColor=pa["edgecolor_write"]
         else:
-            pa_["marker_ec"]=pa["edgecolor"]
+            edgeColor=pa["edgecolor"]
 
-       
+
+       ## Main line
         fig.add_trace(go.Scatter(
             x=km.survival_function_.index, y=km.survival_function_['Kaplan Meier Estimate'],
-            line=dict(shape='hv', width=3, color='rgb(31, 119, 180)'),
-            showlegend=False
+            line=dict(shape='hv', width=linewidth, color=linecolor,  dash=linestyle),
+            showlegend=CI_legend,
+            name="KM Estimate"
         ))
 
-        fig.add_trace(go.Scatter(
-            x=km.confidence_interval_.index, 
-            y=km.confidence_interval_['Kaplan Meier Estimate_upper_0.95'],
-            line=dict(shape='hv', width=0),
-            showlegend=False,
-        ))
+        if pa_["ci_force_lines"] and pa_["Conf_Interval"]:
 
-        fig.add_trace(go.Scatter(
-            x=km.confidence_interval_.index,
-            y=km.confidence_interval_['Kaplan Meier Estimate_lower_0.95'],
-            line=dict(shape='hv', width=0),
-            fill='tonexty',
-            fillcolor='rgba(31, 119, 180, 0.4)',
-            showlegend=False
-        ))
+            ## Adding line for upper conf interval
+            fig.add_trace(go.Scatter(
+            x=km.confidence_interval_.index, y=km.confidence_interval_["Kaplan Meier Estimate"+"_upper_0.95"],
+            line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
+            showlegend=CI_legend,
+            name="95% Conf. Interval - Upper"
+            ))
+
+            ## Adding line for lower conf interval
+            fig.add_trace(go.Scatter(
+            x=km.confidence_interval_.index, y=km.confidence_interval_["Kaplan Meier Estimate"+"_lower_0.95"],
+            line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
+            showlegend=CI_legend,
+            name="95% Conf. Interval - Lower"
+            ))
+
+            ## Adding shade for upper conf interval
+            fig.add_trace(go.Scatter(
+                x=km.confidence_interval_.index, 
+                y=km.confidence_interval_["Kaplan Meier Estimate"+"_upper_0.95"],
+                line=dict(shape='hv', width=0),
+                showlegend=False,
+                name="95% Conf. Interval"
+            ))
+
+            ## Adding shade for lower conf interval
+            fig.add_trace(go.Scatter(
+                x=km.confidence_interval_.index,
+                y=km.confidence_interval_["Kaplan Meier Estimate"+"_lower_0.95"],
+                line=dict(shape='hv', width=0),
+                fill='tonexty',
+                fillcolor=ci_color_rgba,
+                showlegend=False,
+                name="95% Conf. Interval"
+            ))
+
+        elif pa_["ci_force_lines"]:
+            ## Adding line for upper conf interval
+            fig.add_trace(go.Scatter(
+            x=km.confidence_interval_.index, y=km.confidence_interval_["Kaplan Meier Estimate"+"_upper_0.95"],
+            line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
+            showlegend=CI_legend,
+            name="95% Conf. Interval - Upper"
+            ))
+
+            ## Adding line for lower conf interval
+            fig.add_trace(go.Scatter(
+            x=km.confidence_interval_.index, y=km.confidence_interval_["Kaplan Meier Estimate"+"_lower_0.95"],
+            line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
+            showlegend=CI_legend,
+            name="95% Conf. Interval - Lower"
+            ))
+
+        elif pa_["Conf_Interval"]:
+            ## Adding shade for upper conf interval
+            fig.add_trace(go.Scatter(
+                x=km.confidence_interval_.index, 
+                y=km.confidence_interval_["Kaplan Meier Estimate"+"_upper_0.95"],
+                line=dict(shape='hv', width=0),
+                showlegend=False,
+                name="95% Conf. Interval"
+            ))
+
+            ## Adding shade for lower conf interval
+            fig.add_trace(go.Scatter(
+                x=km.confidence_interval_.index,
+                y=km.confidence_interval_["Kaplan Meier Estimate"+"_lower_0.95"],
+                line=dict(shape='hv', width=0),
+                fill='tonexty',
+                fillcolor=ci_color_rgba,
+                showlegend=False,
+                name="95% Conf. Interval"
+            ))
+
+        if pa_["show_censors"]:
+
+            #censors=df.loc[df["Kaplan Meier Estimate"+"_censored"] > 0, ["time", "Kaplan Meier Estimate"+"_KMestimate"]]
+            censors=df.loc[df["censored"] > 0, ["time", "Kaplan Meier Estimate"]]
+            #print(censors)
+
+            censors_x=censors["time"].tolist()
+            #censors_y=censors[cond+"_KMestimate"].tolist()
+            censors_y=censors["Kaplan Meier Estimate"].tolist()
+        
+            fig.add_trace(go.Scatter(x=censors_x, y=censors_y, 
+                    mode='markers', 
+                    marker=dict(symbol=markerShape,\
+                            color=markerColor,
+                            size=markerSize,
+                            opacity=float(markerAlpha),
+                            line=dict(
+                                color=edgeColor,
+                                width=edgeLineWidth)), \
+                    showlegend=False,\
+                    name='Censors'))
 
         fig.show()
-
-        
-
-        # pl.spines['right'].set_visible(pa_["right_axis"])
-        # pl.spines['top'].set_visible(pa_["upper_axis"])
-        # pl.spines['left'].set_visible(pa_["left_axis"])
-        # pl.spines['bottom'].set_visible(pa_["lower_axis"])
-
-        # pl.spines['right'].set_linewidth(pa["axis_line_width"])
-        # pl.spines['left'].set_linewidth(pa["axis_line_width"])
-        # pl.spines['top'].set_linewidth(pa["axis_line_width"])
-        # pl.spines['bottom'].set_linewidth(pa["axis_line_width"])
-        
-        # pl.tick_params(axis="both", direction=pa["ticks_direction_value"], length=float(pa["ticks_length"]))
-
-        # pl.tick_params(axis='x',which='both',bottom=pa_["tick_lower_axis"],top=pa_["tick_upper_axis"],labelbottom=pa_["lower_axis"], 
-        #                labelrotation=float(pa["xticks_rotation"]), labelsize=float(pa["xticks_fontsize"]))
-                       
-        # pl.tick_params(axis='y',which='both',left=pa_["tick_left_axis"],right=pa_["tick_right_axis"],labelleft=pa_["left_axis"], 
-        #                labelrotation=float(pa["yticks_rotation"]), labelsize=float(pa["yticks_fontsize"]))
-
-        # if str(pa["grid_value"]) != "None":
-        #     pl.grid(True, which='both',axis=pa["grid_value"], color=pa_["grid_color_write"], linewidth=float(pa["grid_linewidth"]))
-                       
-        # if str(pa["x_lower_limit"]) != "" and str(pa["x_upper_limit"]) != "":
-        #     pl.set_xlim(float(pa["x_lower_limit"]),float(pa["x_upper_limit"]))
-        # if str(pa["y_lower_limit"]) != "" and str(pa["y_upper_limit"]) != "":
-        #     pl.set_ylim(float(pa["y_lower_limit"]),float(pa["y_upper_limit"])) 
-
-        # pl.set_title(pa["title"], fontdict={'fontsize':float(pa['titles'])})
-        # pl.set_xlabel(pa["xlabel"], fontdict={'fontsize':float(pa['xlabels'])})
-        # pl.set_ylabel(pa["ylabel"], fontdict={'fontsize':float(pa['ylabels'])})
 
         return df, fig
 
@@ -315,46 +389,20 @@ def make_figure(df,pa):
             tmp.append(df)
 
             df=reduce(lambda df1,df2: pd.merge(df1,df2,on='time'), tmp)
-
-            print(df)
             
             ## Figure starting here
             PA_=[ g for g in pa["groups_settings"] if g["name"]==cond ][0]
+            
+            ## Main Line arguments per group
+            linewidth=float(PA_["linewidth_write"])
+            linestyle=PA_["linestyle_value"]
 
             if str(PA_["linecolor_write"]) != "":
                 linecolor=PA_["linecolor_write"]
             else:
                 linecolor=PA_["line_color_value"]
 
-
-            if str(PA_["ci_linecolor_write"]) != "":
-                ci_linecolor=PA_["ci_linecolor_write"]
-            else:
-                ci_linecolor=PA_["ci_line_color_value"]
-
-            CI_alpha=PA_["ci_alpha"]
-            markerAlpha=PA_["marker_alpha"]
-
-            from matplotlib import colors
-            ci_color_rgba="rgba("+str(colors.to_rgba(ci_linecolor)[0])+","+str(colors.to_rgba(ci_linecolor)[1])+","+str(colors.to_rgba(ci_linecolor)[2])+","+CI_alpha+")"
-            #print(ci_color_rgba)
-
-            linestyle=PA_["linestyle_value"]
-            ci_linestyle=PA_["ci_linestyle_value"]
-
-            linewidth=float(PA_["linewidth_write"])
-            ci_linewidth=float(PA_["ci_linewidth_write"])
-            
-            if str(PA_["markerc_write"]) != "":
-                markerColor=PA_["markerc_write"]
-            else:
-                markerColor=PA_["markerc"]
-
-            if str(PA_["edgecolor_write"]) != "":
-                edgeColor=PA_["edgecolor_write"]
-            else:
-                edgeColor=PA_["edgecolor"]
-
+            ## Plot settings
             for a in ["Conf_Interval","show_censors","ci_legend","ci_force_lines"]:
                 if a in PA_["model_settings"]:
                     PA_[a]=True
@@ -367,11 +415,41 @@ def make_figure(df,pa):
             else:
                 CI_legend=False
 
-            edgeLineWidth=float(PA_["edge_linewidth"])
-            markerSize=float(PA_["censor_marker_size_val"])
-            markerShape=PA_["censor_marker_value"]
+            ## Conf interval Lines arguments per group
+            ci_linewidth=float(PA_["ci_linewidth_write"])
+            ci_linestyle=PA_["ci_linestyle_value"]
 
-            print(PA_)
+            CI_alpha=PA_["ci_alpha"]
+
+            if str(PA_["ci_linecolor_write"]) != "":
+                ci_linecolor=PA_["ci_linecolor_write"]
+                ci_color_rgba=ci_linecolor.strip(")")+","+str(CI_alpha)+")"
+                ci_color_rgba=ci_color_rgba.replace("rgb","rgba")
+                #print(ci_color_rgba)
+            else:
+                ci_linecolor=PA_["ci_line_color_value"]
+                from matplotlib import colors
+                ci_color_rgba="rgba("+str(colors.to_rgba(ci_linecolor)[0])+","+str(colors.to_rgba(ci_linecolor)[1])+","+str(colors.to_rgba(ci_linecolor)[2])+","+CI_alpha+")"
+                 #print(ci_color_rgba)
+
+            ## Censors arguments
+            markerShape=PA_["censor_marker_value"]
+            markerSize=float(PA_["censor_marker_size_val"])
+            edgeLineWidth=float(PA_["edge_linewidth"])
+
+            if str(PA_["markerc_write"]) != "":
+                markerColor=PA_["markerc_write"]
+            else:
+                markerColor=PA_["markerc"]
+
+            markerAlpha=PA_["marker_alpha"]
+
+            if str(PA_["edgecolor_write"]) != "":
+                edgeColor=PA_["edgecolor_write"]
+            else:
+                edgeColor=PA_["edgecolor"]
+
+
             ## Main line 'rgb(31, 119, 180)'
             fig.add_trace(go.Scatter(
                 x=km.survival_function_.index, y=km.survival_function_[cond],
@@ -385,15 +463,17 @@ def make_figure(df,pa):
                 ## Adding line for upper conf interval
                 fig.add_trace(go.Scatter(
                 x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_upper_0.95"],
-                line=dict(shape='hv', width=linewidth, color=linecolor,  dash=linestyle),
-                showlegend=CI_legend
+                line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
+                showlegend=CI_legend,
+                name="95% Conf. Interval - "+cond
                 ))
 
                 ## Adding line for lower conf interval
                 fig.add_trace(go.Scatter(
                 x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_lower_0.95"],
-                line=dict(shape='hv', width=linewidth, color=linecolor,  dash=linestyle),
-                showlegend=CI_legend
+                line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
+                showlegend=CI_legend,
+                name="95% Conf. Interval - "+cond
                 ))
 
                 ## Adding shade for upper conf interval
@@ -401,7 +481,8 @@ def make_figure(df,pa):
                     x=km.confidence_interval_.index, 
                     y=km.confidence_interval_[cond+"_upper_0.95"],
                     line=dict(shape='hv', width=0),
-                    showlegend=CI_legend,
+                    showlegend=False,
+                    name="95% Conf. Interval - "+cond
                 ))
 
                 ## Adding shade for lower conf interval
@@ -411,7 +492,8 @@ def make_figure(df,pa):
                     line=dict(shape='hv', width=0),
                     fill='tonexty',
                     fillcolor=ci_color_rgba,
-                    showlegend=False
+                    showlegend=False,
+                    name="95% Conf. Interval - "+cond
                 ))
 
             elif PA_["ci_force_lines"]:
@@ -419,14 +501,16 @@ def make_figure(df,pa):
                 fig.add_trace(go.Scatter(
                 x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_upper_0.95"],
                 line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
-                showlegend=CI_legend
+                showlegend=CI_legend,
+                name="95% Conf. Interval - "+cond
                 ))
 
                 ## Adding line for lower conf interval
                 fig.add_trace(go.Scatter(
                 x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_lower_0.95"],
                 line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
-                showlegend=CI_legend
+                showlegend=CI_legend,
+                name="95% Conf. Interval - "+cond
                 ))
 
             elif PA_["Conf_Interval"]:
@@ -435,7 +519,8 @@ def make_figure(df,pa):
                     x=km.confidence_interval_.index, 
                     y=km.confidence_interval_[cond+"_upper_0.95"],
                     line=dict(shape='hv', width=0),
-                    showlegend=CI_legend,
+                    showlegend=False,
+                    name="95% Conf. Interval - "+cond
                 ))
 
                 ## Adding shade for lower conf interval
@@ -445,14 +530,14 @@ def make_figure(df,pa):
                     line=dict(shape='hv', width=0),
                     fill='tonexty',
                     fillcolor=ci_color_rgba,
-                    showlegend=False
+                    showlegend=False,
+                    name="95% Conf. Interval - "+cond
                 ))
 
             if PA_["show_censors"]:
 
                 censors=df.loc[df[cond+"_censored"] > 0, ["time", cond+"_KMestimate"]]
-                print(censors)
-
+                
                 censors_x=censors["time"].tolist()
                 censors_y=censors[cond+"_KMestimate"].tolist()
             
@@ -466,84 +551,12 @@ def make_figure(df,pa):
                                     color=edgeColor,
                                     width=edgeLineWidth)), \
                         showlegend=False,\
-                        name='TMP'))
+                        name=cond))
 
+
+        fig.show()     
 
         return df, fig, cph_coeff, cph_stats
-        
-        
-
-
-
-   
-    
-
-    fig.show()
-
-        
-            
-           
-
-            # pa_={}
-            # for arg in ["left_axis", "right_axis" , "upper_axis", "lower_axis","tick_left_axis","tick_right_axis","tick_upper_axis","tick_lower_axis"]:
-            #     if pa[arg] in ["off", ".off"]:
-            #         pa_[arg]=False
-            #     else:
-            #         pa_[arg]=True
-
-            # if str(pa["grid_color_text"]) != "":
-            #     pa_["grid_color_write"]=pa["grid_color_text"]
-            # else:
-            #     pa_["grid_color_write"]=pa["grid_color_value"]
-        
-            # pl=km.plot(show_censors=showCensors, \
-            #     censor_styles={"marker":marker_dict[markerVal], "markersize":float(markerSize), "markeredgecolor":edgeColor, "markerfacecolor":markerColor, "alpha":float(markerAlpha), "mew":float(edgeLineWidth)}, \
-            #     ci_alpha=float(CI_alpha), \
-            #     ci_force_lines=CI_lines, \
-            #     ci_show=ConfidenceInterval, \
-            #     ci_legend=CI_legend, \
-            #     linestyle=linestyle, \
-            #     linewidth=float(linewidth), \
-            #     color=linecolor)
-            # print("test1")
-            # pl1=km.plot()
-            # pl2=plt.gcf()
-
-            # print("test2")
-            # pl = tls.mpl_to_plotly(pl2, resize=True)
-            #pl=py.iplot(pl3)
-
-            # pl.spines['right'].set_visible(pa_["right_axis"])
-            # pl.spines['top'].set_visible(pa_["upper_axis"])
-            # pl.spines['left'].set_visible(pa_["left_axis"])
-            # pl.spines['bottom'].set_visible(pa_["lower_axis"])
-
-            # pl.spines['right'].set_linewidth(pa["axis_line_width"])
-            # pl.spines['left'].set_linewidth(pa["axis_line_width"])
-            # pl.spines['top'].set_linewidth(pa["axis_line_width"])
-            # pl.spines['bottom'].set_linewidth(pa["axis_line_width"])
-
-            # pl.tick_params(axis="both", direction=pa["ticks_direction_value"], length=float(pa["ticks_length"]))
-
-            # pl.tick_params(axis='x',which='both',bottom=pa_["tick_lower_axis"],top=pa_["tick_upper_axis"],labelbottom=pa_["lower_axis"], 
-            #                labelrotation=float(pa["xticks_rotation"]), labelsize=float(pa["xticks_fontsize"]))
-       
-            # pl.tick_params(axis='y',which='both',left=pa_["tick_left_axis"],right=pa_["tick_right_axis"],labelleft=pa_["left_axis"], 
-            #                labelrotation=float(pa["yticks_rotation"]), labelsize=float(pa["yticks_fontsize"]))
-
-            # if str(pa["grid_value"]) != "None":
-            #     pl.grid(True, which='both',axis=pa["grid_value"], color=pa_["grid_color_write"], linewidth=float(pa["grid_linewidth"]), linestyle=pa["grid_linestyle_value"])
-
-            # if str(pa["x_lower_limit"]) != "" and str(pa["x_upper_limit"]) != "":       
-            #     pl.set_xlim(float(pa["x_lower_limit"]),float(pa["x_upper_limit"]))
-            # if str(pa["y_lower_limit"]) != "" and str(pa["y_upper_limit"]) != "":  
-            #     pl.set_ylim(float(pa["y_lower_limit"]),float(pa["y_upper_limit"]))    
-
-            # pl.set_title(pa["title"], fontdict={'fontsize':float(pa['titles'])})
-            # pl.set_xlabel(pa["xlabel"], fontdict={'fontsize':float(pa['xlabels'])})
-            # pl.set_ylabel(pa["ylabel"], fontdict={'fontsize':float(pa['ylabels'])})
-
-        #return df, fig, cph_coeff, cph_stats
         
 
 ALLOWED_MARKERS=['circle', 'circle-open', 'circle-dot', 'circle-open-dot', 'square', 'square-open', 
@@ -679,8 +692,6 @@ def figure_defaults():
         "y_lower_limit":"",\
         "x_upper_limit":"",\
         "y_upper_limit":"",\
-        "maxxticks":"",\
-        "maxyticks":"",\
         "grid":["None","both","x","y"],\
         "grid_value":"None",\
         "grid_color_text":"",\
@@ -690,15 +701,16 @@ def figure_defaults():
         "grid_linestyle_value":'solid',\
         "grid_linewidth":"1",\
         "grid_alpha":"0.1",\
-        "download_format":["tsv","xlsx"],\
-        "downloadf":"xlsx",\
-        "download_fig_format":["png","pdf","svg"], \
-        "download_fig":"pdf", \
-        "downloadn":"LifeSpan",\
-        "downloadn_fig":"LifeSpan",\
-        "session_downloadn":"MySession.LifeSpan",\
-        "inputsessionfile":"Select file..",\
-        "session_argumentsn":"MyArguments.LifeSpan",\
-        "inputargumentsfile":"Select file.."}
+        # "download_format":["tsv","xlsx"],\
+        # "downloadf":"xlsx",\
+        # "download_fig_format":["png","pdf","svg"], \
+        # "download_fig":"pdf", \
+        # "downloadn":"LifeSpan",\
+        # "downloadn_fig":"LifeSpan",\
+        # "session_downloadn":"MySession.LifeSpan",\
+        # "inputsessionfile":"Select file..",\
+        # "session_argumentsn":"MyArguments.LifeSpan",\
+        # "inputargumentsfile":"Select file.."
+        }
 
     return plot_arguments
