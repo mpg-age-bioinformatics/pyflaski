@@ -179,16 +179,20 @@ def make_figure(df,pa):
                 s=float(pa["markers"])
 
             if pa["markerc_col"]:
-                c=[ float(i) for i in tmp[pa["markerc_col"]].tolist() ]
-                # if value range is set
-                if pa["lower_value"] != "":
-                    low=float(pa["lower_value"])
+                t=[ type(i) for i in tmp[pa["markerc_col"]].tolist() ]
+                if str in t:
+                    c=[ str(i) for i in tmp[pa["markerc_col"]].tolist() ]
                 else:
-                    low=min(c)
-                if pa["upper_value"] != "":
-                    high=float(pa["upper_value"])
-                else:
-                    high=max(c)
+                    c=[ float(i) for i in tmp[pa["markerc_col"]].tolist() ]
+                    # if value range is set
+                    if pa["lower_value"] != "":
+                        low=float(pa["lower_value"])
+                    else:
+                        low=min(c)
+                    if pa["upper_value"] != "":
+                        high=float(pa["upper_value"])
+                    else:
+                        high=max(c)
             elif pa["markerc_write"]:
                 c=pa["markerc_write"]
             else:

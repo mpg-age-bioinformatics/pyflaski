@@ -110,10 +110,10 @@ def figure_defaults():
     """
     plot_arguments={
         "xcols":[],\
-        "xvals":"",\
+        "xvals":None,\
         "ycols":[],\
-        "yvals":"",\
-        "groups":"",\
+        "yvals":None,\
+        "groups":None,\
         "ncomponents":"2",\
         "percvar":"100",\
         "scale":["feature","sample"],\
