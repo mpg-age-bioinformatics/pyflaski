@@ -120,6 +120,22 @@ def make_figure(df,pa):
     elif pa["zscore_value"] == "columns":
         tmp=pd.DataFrame(stats.zscore(tmp, axis=0, ddof=1),columns=tmp.columns.tolist(), index=tmp.index.tolist())
 
+    if ( len(pa["findrow"]) > 0 ) or ( pab["col_cluster"] ) or ( pab["row_cluster"] ) :
+        missing_values={}
+        for c in tmp.columns.tolist()  :
+            tmp_=tmp[[c]]
+            infs=list(tmp_.index[ np.isinf(tmp_).any(1)])
+            mvalues=tmp_[ tmp_[c].isnull() ].index.tolist()
+            mvalues=mvalues+infs
+            if mvalues:
+                missing_values[c]=", ".join(mvalues)
+        if missing_values:
+            message="\nYou have either infinite or missing values on your data.\nYou will need to deactivate both columns and rows clustering as well as 'Find rows'.\nIf log2 or log10 transformations are taking place try adding a constant eg. 1.\nMissing values:\n"
+            for k in list( missing_values.keys() ) :
+                t=k+": "+missing_values[k]+"\n"
+                message=message+t
+            raise ValueError(message)
+
     if len(pa["findrow"]) > 0 :
         rows_to_find=pa["findrow"]
 
@@ -127,7 +143,7 @@ def make_figure(df,pa):
         not_found=[ s for s in rows_to_find if s not in possible_rows ]
         if len(not_found) > 0:
             message="˜The following rows could not be found: %s. Please check your entries for typos." %(", ".join(not_found) )
-            flash(message,'error')
+            # flash(message,'error')
 
         rows_to_plot=[]+rows_to_find
 
