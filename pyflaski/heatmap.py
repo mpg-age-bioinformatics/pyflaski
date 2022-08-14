@@ -34,6 +34,13 @@ def make_figure(df,pa):
     tmp.index=tmp[pa["xvals"]].tolist()
     tmp=tmp[pa["yvals"]]
 
+    for c in pa["yvals"] : 
+        try:
+            tmp[c]=tmp[c].astype(float)
+        except:
+            message=f"Not all values in column '{c}' could be converted to a floating number. Make sure all selected columns contain floating or integer numbers."
+            raise ValueError( message )
+
     if pa["add_constant"]!="":
         tmp=tmp+float(pa["add_constant"])
 
