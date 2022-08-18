@@ -30,6 +30,13 @@ def make_figure(df,pa):
     #fig = go.Figure( )
     #fig.update_layout( width=pa_["fig_width"], height=pa_["fig_height"] ) #  autosize=False,
 
+    if not pa["xvals"] :
+        message="Please use 'Row Names' to select the column containing row identifiers."
+        raise ValueError(message)
+    if not pa["yvals"] :
+        message="Please use 'Data Columns' to select the data containing columns."
+        raise ValueError(message)
+
     tmp=df.copy()
     tmp.index=tmp[pa["xvals"]].tolist()
     tmp=tmp[pa["yvals"]]
