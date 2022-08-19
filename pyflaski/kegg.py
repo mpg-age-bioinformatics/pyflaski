@@ -3,7 +3,7 @@ import pandas as pd
 #import os
 # cwd = os.getcwd()
 
-def make_figure(pa, path_to_data="/myapp/data/kegg"):
+def make_figure(pa, path_to_data="/myapp/pyflaski/data/kegg"):
     kegg2map=pd.read_csv(path_to_data+"/kegg_long.tsv",sep="\t")
     hmdb2kegg=pd.read_csv(path_to_data+"/hmbd2kegg.tsv", sep="\t")
     maps_names=pd.read_csv(path_to_data+"/maps_names.tsv", sep="\t")
