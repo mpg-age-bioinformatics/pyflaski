@@ -41,6 +41,10 @@ def make_figure(df,pa):
     tmp.index=tmp[pa["xvals"]].tolist()
     tmp=tmp[pa["yvals"]]
 
+    tmp=tmp.dropna(axis=0, how="all")
+    tmp=tmp.dropna(axis=1, how="all" )
+    pa["yvals"]=tmp.columns.tolist()
+    
     for c in pa["yvals"] : 
         try:
             tmp[c]=tmp[c].astype(float)
