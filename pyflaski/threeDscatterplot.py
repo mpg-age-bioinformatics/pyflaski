@@ -454,7 +454,7 @@ def make_figure(df,pa):
 
         fig.add_trace(go.Surface(x=x_, y= y_.apply(lambda x: float(pa["y_axis_plane"])), z =  np.array([z]*length_data).transpose(),\
                         colorscale=yplane_color, showscale=False, opacity=float(pa["y_axis_plane_color_opacity"])))
-        
+
     if pa["z_axis_plane"] != None:
         selfdefined_z_cmap=True
         for value in ["z_plane_lower_color","z_plane_upper_color"]:
