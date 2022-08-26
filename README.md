@@ -2,6 +2,8 @@
 
 This the Graphical User Interface to Programmatic Interface helper package of Flaski.
 
+![flaski](/Flaski.Readme.png)
+
 ## Installing 
 
 ```bash
