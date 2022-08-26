@@ -37,6 +37,8 @@ COPY . /pyflaski
 
 RUN pip3 install -r /pyflaski/requirements.txt
 
-RUN pip3 install /pyflaski
+RUN pip3 install jupyter jupyterlab
+
+RUN pip3 install -e /pyflaski
 
 RUN python3 -c 'import pyflaski'
