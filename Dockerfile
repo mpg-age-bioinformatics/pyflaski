@@ -26,7 +26,16 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
 RUN apt-get update && apt-get -yq dist-upgrade && \
-apt-get install -yq pkg-config libcairo2-dev python3 python3-pip  && \
+apt-get install -yq pkg-config \
+libcairo2-dev \
+python3 \
+python3-pip \
+texlive \
+texlive-latex-extra \
+texlive-xetex \
+texlive-fonts-recommended \
+texlive-plain-generic \
+pandoc && \
 python3 -m pip install -U pip && \
 pip3 install --ignore-installed pyxdg==0.26 && \
 apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -37,7 +46,7 @@ COPY . /pyflaski
 
 RUN pip3 install -r /pyflaski/requirements.txt
 
-RUN pip3 install jupyter jupyterlab
+RUN pip3 install jupyter jupyterlab nbconvert
 
 RUN pip3 install -e /pyflaski
 
