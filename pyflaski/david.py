@@ -439,9 +439,9 @@ def figure_defaults():
         "categories_literature_value":[],\
         "categories_disease":['GENETIC_ASSOCIATION_DB_DISEASE', 'OMIM_DISEASE'],\
         "categories_disease_value":['OMIM_DISEASE'],\
-        "user":"your.email@provider.com",\
-        "ids":"Enter target genes here...",\
-        "ids_bg":"Leave empty if you want to use all annotated genes for your organism",\
+        "user":None,\
+        "ids":None,\
+        "ids_bg":None,\
         "name":"target list",\
         "name_bg":"background list",\
         "p":"0.1",\
