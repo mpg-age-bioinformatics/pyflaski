@@ -17,6 +17,7 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         A Plotly figure.
 
     """
+        
     pa_={}
     for c in checkboxes:
         if c in pa[c]:
@@ -80,7 +81,11 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         namesdic.index=namesdic[0].tolist()
         namesdic=namesdic.to_dict()[ 1 ]
 
-    david_df_genes=list(set(david_df["genes"].tolist()))
+    david_df_genes=david_df[[pa["david_gene_ids"]]]
+    david_df_genes[pa["david_gene_ids"]]=david_df_genes[pa["david_gene_ids"]].astype(str)
+    david_df_genes=david_df_genes[pa["david_gene_ids"]].tolist()
+    david_df_genes=", ".join(david_df_genes).split(", ")
+    # david_df_genes=list(set(david_df["genes"].tolist()))
     gedic_genes=list(gedic.keys())
     missing=[ s for s in david_df_genes if s not in gedic_genes ]
     if missing:
