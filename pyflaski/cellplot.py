@@ -17,12 +17,16 @@ def make_figure(david_df, ge_df, pa,checkboxes=CHECKBOXES):
         A Plotly figure.
 
     """
+
+    pa=pa.copy()
         
     pa_={}
     for c in checkboxes:
         if c in pa[c]:
+            # print(True, pa[c])
             pa_[c]=True
         else:
+            # print(False, pa[c])
             pa_[c]=False
 
     nones=["width","height"]

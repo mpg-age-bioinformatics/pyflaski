@@ -569,7 +569,7 @@ def figure_defaults():
         "vp_side":"both",\
         "vp_sides":["both","positive","negative"],\
         "violinmodes":STANDARD_VIOLINMODES,\
-        "vp_mode":"overlay",\
+        "vp_mode":"group",\
         "vp_groupgap":"0.3",\
         "vp_gap":"0.3",\
         "scalemodes":STANDARD_SCALEMODES,\

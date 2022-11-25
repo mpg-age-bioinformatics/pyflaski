@@ -1,3 +1,4 @@
+from ast import Continue
 import pandas as pd
 import numpy as np
 import warnings
@@ -150,19 +151,21 @@ def make_figure(pa):
         #determine number of subsets
         n_subsets = sum([scipy.special.binom(n_sets,i+1) for i in range(0,n_sets)])
     
-        for i in range(0,int(n_subsets)):
-            
-            #create subset label (number of common elements for current subset
-            anno_subset_label = go.layout.Annotation(
-                    xref="x",
-                    yref="y",
-                    x = v.subset_labels[i].get_position()[0],
-                    y = v.subset_labels[i].get_position()[1],
-                    text = v.subset_labels[i].get_text(),
-                    showarrow=False
-            )
-            
-            L_annotation.append(anno_subset_label)
+        for i in range(0,int(n_subsets)): 
+            if v.subset_labels[i] is not None:
+                #create subset label (number of common elements for current subset
+                anno_subset_label = go.layout.Annotation(
+                        xref="x",
+                        yref="y",
+                        x = v.subset_labels[i].get_position()[0],
+                        y = v.subset_labels[i].get_position()[1],
+                        text = v.subset_labels[i].get_text(),
+                        showarrow=False
+                )
+                
+                L_annotation.append(anno_subset_label)
+            else:
+                Continue
         
         
     #define off_set for the figure range    
