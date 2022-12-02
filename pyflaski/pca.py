@@ -7,14 +7,13 @@ import math
 
 def make_figure(df,pa):
     df_pca=df.copy()
-    df_pca.index=df_pca[pa["xvals"]].tolist()
-    df_pca=df_pca[pa["yvals"]]
-
-    print(df_pca.head())
 
     if len(df_pca[df_pca.duplicated()]) > 0:
-        message="One or more rows in your data occur more than once. Please make sure there are no duplicated rows in the data."
+        message="One or more rows in your data occur more than once. Please make sure that there are no duplicated rows in the data."
         raise ValueError(message)
+    
+    df_pca.index=df_pca[pa["xvals"]].tolist()
+    df_pca=df_pca[pa["yvals"]]
 
     if pa["groups"] != None:
         groups = df_pca.loc[pa['groups']].tolist()
