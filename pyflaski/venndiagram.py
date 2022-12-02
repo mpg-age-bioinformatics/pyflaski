@@ -60,6 +60,10 @@ def make_figure(pa):
         else:
             pa_["%s_line_color" %set_index ] = pa["%s_line_color" %set_index ]
 
+    if len(sets) == 0:
+        message="Please make sure that at lease two sets have non empty values."
+        raise ValueError(message)
+
     #print(pa["set1_values"])
     #print(pa["set2_values"])
     if len( list(sets.keys()) ) == 2:

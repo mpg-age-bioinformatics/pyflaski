@@ -10,6 +10,12 @@ def make_figure(df,pa):
     df_pca.index=df_pca[pa["xvals"]].tolist()
     df_pca=df_pca[pa["yvals"]]
 
+    print(df_pca.head())
+
+    if len(df_pca[df_pca.duplicated()]) > 0:
+        message="One or more rows in your data occur more than once. Please make sure there are no duplicated rows in the data."
+        raise ValueError(message)
+
     if pa["groups"] != None:
         groups = df_pca.loc[pa['groups']].tolist()
         df_pca = df_pca.drop(pa['groups'])
