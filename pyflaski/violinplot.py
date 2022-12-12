@@ -180,7 +180,7 @@ def make_figure(df,pa):
         else:
             if "Swarmplot" in pa["style"]:    
                 if pa["vp_mode"]=="group":
-                    for each,color,mcolor,lcolor in zip(list(set(tmp[pab["hue"]])),vp_color,marker_color,vp_linecolor):
+                    for each,color,mcolor,lcolor,mlcolor in zip(list(set(tmp[pab["hue"]])),vp_color,marker_color,vp_linecolor,marker_linecolor):
                         
                         line=dict(color=lcolor,width=pab["vp_linewidth"])
 
