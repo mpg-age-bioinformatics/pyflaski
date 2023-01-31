@@ -10,7 +10,7 @@ from pyflaski.routines import fuzzy_search
   # from flaski.routines import fuzzy_search
 
 david_categories = [
-  'GOTERM_BP_FAT', 'GOTERM_CC_FAT', 'GOTERM_MF_FAT', 'KEGG_PATHWAY',
+  'GOTERM_BP_DIRECT', 'GOTERM_CC_DIRECT', 'GOTERM_MF_DIRECT' ,'GOTERM_BP_FAT', 'GOTERM_CC_FAT', 'GOTERM_MF_FAT', 'KEGG_PATHWAY',
   'BIOCARTA', 'PFAM', 'PROSITE' ]
 
 david_fields = [
@@ -411,13 +411,13 @@ def figure_defaults():
           'UNIPROT_ACCESSION','UNIPROT_ID','UNIREF100_ID','WORMBASE_GENE_ID',
           'WORMPEP_ID','ZFIN_ID'],\
         "database_value":'ENSEMBL_GENE_ID',\
-        "categories_gene_ontology":['GOTERM_BP_1', 'GOTERM_BP_2', 'GOTERM_BP_3', 'GOTERM_BP_4',
+        "categories_gene_ontology":['GOTERM_BP_DIRECT', 'GOTERM_CC_DIRECT', 'GOTERM_MF_DIRECT' ,'GOTERM_BP_1', 'GOTERM_BP_2', 'GOTERM_BP_3', 'GOTERM_BP_4',
                  'GOTERM_BP_5', 'GOTERM_BP_ALL', 'GOTERM_BP_FAT', 'GOTERM_CC_1',
                  'GOTERM_CC_2', 'GOTERM_CC_3', 'GOTERM_CC_4', 'GOTERM_CC_5',
                  'GOTERM_CC_ALL', 'GOTERM_CC_FAT', 'GOTERM_MF_1', 'GOTERM_MF_2',
                  'GOTERM_MF_3', 'GOTERM_MF_4', 'GOTERM_MF_5', 'GOTERM_MF_ALL',
                  'GOTERM_MF_FAT'],\
-        "categories_gene_ontology_value": ['GOTERM_BP_FAT','GOTERM_CC_FAT','GOTERM_MF_FAT'],\
+        "categories_gene_ontology_value": ['GOTERM_BP_DIRECT', 'GOTERM_CC_DIRECT', 'GOTERM_MF_DIRECT' ],\
         "categories_gene_domains":['BLOCKS_ID', 'COG', 'INTERPRO', 'PDB_ID',
                    'PFAM', 'PIR_ALN','PIR_HOMOLOGY_DOMAIN', 'PIR_SUPERFAMILY',
                    'PRINTS', 'PRODOM', 'PROSITE', 'SCOP_ID',
