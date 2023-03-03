@@ -36,9 +36,12 @@ def make_figure(df,pa):
     pca = PCA(copy=True, iterated_power='auto', n_components=int(pa["ncomponents"]), random_state=None, svd_solver='auto', tol=0.0, whiten=False)
     if pa["scale_value"] == "feature":
         axis=0
+        df_pca_scaled = preprocessing.scale(df_pca,axis=axis)
     elif pa["scale_value"] == "sample":
         axis=1
-    df_pca_scaled = preprocessing.scale(df_pca,axis=axis)
+        df_pca_scaled = preprocessing.scale(df_pca,axis=axis)
+    else:
+        df_pca_scaled = df_pca.copy()
     #else:
     #    df_pca_scaled = df_pca.as_matrix()
     projected=pca.fit_transform(df_pca_scaled)
@@ -121,7 +124,7 @@ def figure_defaults():
         "groups":None,\
         "ncomponents":"2",\
         "percvar":"100",\
-        "scale":["feature","sample"],\
+        "scale":["feature","sample","none"],\
         "scale_value":"sample",\
         "download_format":["tsv","xlsx"],\
         "downloadf":"xlsx",\
