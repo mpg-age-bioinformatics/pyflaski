@@ -439,7 +439,7 @@ def figure_defaults():
         "title_size_value":"16",\
         #"xticklabels":'.off',\
         #"yticklabels":".on",\
-        "show_labels":["xticklabels", "yticklabels"],\
+        "show_labels":[ "yticklabels"],\
         "method":['single','complete','average', 'weighted','centroid','median','ward'],\
         "method_value":"ward",\
         "distance":["euclidean","minkowski","cityblock","seuclidean","sqeuclidean",\
