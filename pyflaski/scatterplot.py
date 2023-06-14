@@ -109,12 +109,7 @@ def make_figure(df,pa):
             else:
                 c=pa_["markerc"]
 
-            # if pa_["edgecolor_col"]:
-            #     edgecolor=[ i for i in tmp[[pa_["edgecolor_col"]]].dropna()[pa_["edgecolor_col"]].tolist()][0]
-            # elif pa_["edgecolor_write"] :
-            #     edgecolor=pa_["edgecolor_write"]
-            # else:
-            #     edgecolor=pa_["edgecolor"]
+
             if pa_["edgecolor_write"] :
                 edgecolor=pa_["edgecolor_write"]
             else:
@@ -163,6 +158,8 @@ def make_figure(df,pa):
             text=tmp["___label___"].tolist()
             high=None
             low=None
+            ehigh=None
+            elow=None
 
 
             if pa["markeralpha_col_value"] :
@@ -238,11 +235,65 @@ def make_figure(df,pa):
                     [1, pa["upper_color"] ]]
 
             if pa["edgecolor_col"]:
-                edgecolor=tmp[[pa["edgecolor_col"]]].dropna()[pa["edgecolor_col"]].tolist()
+                t=[ type(i) for i in tmp[pa["edgecolor_col"]].tolist() ]
+                if str in t:
+                    edgecolor=[ str(i) for i in tmp[pa["edgecolor_col"]].tolist() ]
+                else:
+                    edgecolor=[ float(i) for i in tmp[pa["edgecolor_col"]].tolist() ]
+
+                    if pa["edgecolor_lower_value"] != "":
+                        elow=float(pa["edgecolor_lower_value"])
+                    else:
+                        elow=min(edgecolor)
+                    if pa["edgecolor_upper_value"] != "":
+                        ehigh=float(pa["edgecolor_upper_value"])
+                    else:
+                        ehigh=max(edgecolor)
             elif pa["edgecolor_write"]:
                 edgecolor=pa["edgecolor_write"]
             else:
                 edgecolor=pa["edgecolor"]
+
+
+            if "ec_reverse_color_scale" in pa["ec_reverse_color_scale"]:
+                pab["ec_reverse_color_scale"]=True
+            else:
+                pab["ec_reverse_color_scale"]=False
+
+            if pab["ec_reverse_color_scale"]:
+                pa_["ec_colorscale_value"]=pa["ec_colorscale_value"]+"_r"
+            else:
+                pa_["ec_colorscale_value"]=pa["ec_colorscale_value"]
+
+
+            ec_selfdefined_cmap=True
+            for value in ["edgecolor_lower","edgecolor_center","edgecolor_upper"]:
+                if pa[value]=="":
+                    ec_selfdefined_cmap=False
+                    break
+            if ec_selfdefined_cmap:
+                given_values=True
+                for value in ["edgecolor_lower_value","edgecolor_center_value","edgecolor_upper_value"]:
+                    if pa[value]=="":
+                        given_values=False
+                        break
+
+                if given_values:
+                    elow=float(pa["edgecolor_lower_value"])
+                    ehigh=float(pa["edgecolor_upper_value"])
+
+                    ec_range_diff=float(pa["edgecolor_upper_value"]) - float(pa["edgecolor_lower_value"])
+                    ec_center=float(pa["edgecolor_center_value"]) - float(pa["edgecolor_lower_value"])
+                    ec_center=ec_center/ec_range_diff  
+                else:
+                    ec_range_diff=ehigh - elow
+                    ec_center=( (ehigh-elow)/2+elow ) - elow
+                    ec_center=ec_center/ec_range_diff
+
+                pa_["ec_colorscale_value"]=[ [0, pa["edgecolor_lower"]],\
+                    [ec_center, pa["edgecolor_center"]],\
+                    [1, pa["edgecolor_upper"] ]]
+
 
             if pa["edge_linewidth_col"]:
                 edge_linewidth=[ float(i) for i in tmp[[pa["edge_linewidth_col"]]].dropna()[pa["edge_linewidth_col"]].tolist() ][0]
@@ -263,6 +314,9 @@ def make_figure(df,pa):
                     colorbar={"title":{"text":pa['colorscaleTitle']}, },
                     line=dict(
                         color=edgecolor,
+                        cmax=ehigh,
+                        cmin=elow,
+                        colorscale=pa_["ec_colorscale_value"],
                         width=edge_linewidth
                         )),\
                 showlegend=False,
@@ -555,6 +609,14 @@ def figure_defaults():
         "edgecolor_cols":[],\
         "edgecolor_col":None,\
         "edgecolor_write":None,\
+        "edgecolor_lower":"",\
+        "edgecolor_center":"",\
+        "edgecolor_upper":"",\
+        "edgecolor_lower_value":"",\
+        "edgecolor_center_value":"",\
+        "edgecolor_upper_value":"",\
+        "ec_colorscale_value":"greys",\
+        "ec_reverse_color_scale":"",\
         "edge_linewidth_cols":[],\
         "edge_linewidth_col":None,\
         "edge_linewidths":STANDARD_SIZES,\
