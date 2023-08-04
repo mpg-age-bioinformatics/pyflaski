@@ -336,9 +336,21 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
           df["Z-score"] = zscores
           df["mean log2 FC"] = meanlog2fc
           df["-log10 (pvalue)"] = -np.log10([float(x) for x in df["PValue"]])
-    
+
+        def getGOID(x):
+          if "GO:" in x :
+              r=x.split("~")[0]
+          else:
+              r=np.nan
+          return r
+
+        revigo=df[["Term","PValue"]]
+        revigo["Term"]=revigo["Term"].apply(lambda x: getGOID(x) )
+        revigo=revigo.dropna()
+      
     else:
         df=pd.DataFrame(columns=["Category","Term","Count","%","PValue","Genes","List Total","Pop Hits","Pop Total","Fold Enrichment","Bonferroni","Benjamini","FDR"])
+        revigo=pd.DataFrame()
 
     # mapped=pd.DataFrame({ "target_mapped":mapped })
     # not_mapped=pd.DataFrame({ "target_not_mapped": not_mapped })
@@ -374,7 +386,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
 
     report_stats=pd.DataFrame(report_stats,columns=["Field","Value"])
 
-    return df, report_stats, None
+    return df, report_stats, revigo, None
 
 def figure_defaults():
     """Generates default DAVID query arguments.
