@@ -211,21 +211,21 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
     try:
       client = sudsclient(url)
     except:
-      return None, None, "Could not connect to DAVID. Server might be down."
+      return None, None, None, "Could not connect to DAVID. Server might be down."
     # print("connected to server, checking user")
     
     if pa["user"] == None:
-      return(None, None, 'Please give in a register DAVID email in "Input" > "DAVID registered email". If you do not yet have a registered address you need to register with DAVID - https://david.ncifcrf.gov/webservice/register.htm. Please be aware that you will not receive any confirmation email.')
+      return(None, None, None, 'Please give in a register DAVID email in "Input" > "DAVID registered email". If you do not yet have a registered address you need to register with DAVID - https://david.ncifcrf.gov/webservice/register.htm. Please be aware that you will not receive any confirmation email.')
 
     client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
     try:
       client_auth = client.service.authenticate(user)
     except:
-      return None, None, "Could not connect to DAVID. Server might be down."
+      return None, None, None, "Could not connect to DAVID. Server might be down."
     
     if str(client_auth) == "Failed. For user registration, go to http://david.abcc.ncifcrf.gov/webservice/register.htm" :
       msg = "Failed. For user registration, go to https://david.ncifcrf.gov/webservice/register.htm"
-      return None, None, msg
+      return None, None, None, msg
     if verbose:
       print('User Authentication:', client_auth)
       sys.stdout.flush()
@@ -247,7 +247,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
       sys.stdout.flush()
     if float(size) <= float(0):
       msg='Mapping rate of ids: %s.' %str(size)
-      return None, None, msg
+      return None, None, None, msg
 
     # client_report=client.service.getListReport()
     # mapped=[]
@@ -269,7 +269,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
         sys.stdout.flush()
         if float(size_bg) <= float(0):
           msg='Mapping rate of background ids: %s' %str(size_bg)
-          return None, None, msg
+          return None, None, None, msg
 
     client_categories = client.service.setCategories(categories)
     report_stats.append(['Categories used: ', client_categories])
