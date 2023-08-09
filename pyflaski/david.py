@@ -125,7 +125,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
       query_names=",".join(query_names)
       found_values, emsg=fuzzy_search(query_names,db_names)
       if emsg:
-        return None, None, emsg
+        return None, None, None, emsg
       newcol=idsdf.columns.tolist()[-1]+1
       id_name["gene_name"]=id_name["gene_name"].apply(lambda x: str(x).lower() )
       id_name.index=id_name["gene_name"].tolist()
@@ -163,7 +163,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
               query_names=",".join(ids_bg)
               found_values, emsg=fuzzy_search(query_names,db_names)
               if emsg:
-                return None, None, emsg
+                return None, None, None, emsg
               id_name["gene_name"]=id_name["gene_name"].apply(lambda x: str(x).lower() )
               id_name.index=id_name["gene_name"].tolist()
               id_name=id_name.to_dict()["gene_id"]
@@ -326,7 +326,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
         if zscore: 
           table_headers=df.columns.tolist()
           if not "annotation_%s" %(int(pa["log2fc_column"])-1) in table_headers:
-            return(None, None, "wrong log2fc column index")
+            return(None, None, None, "wrong log2fc column index")
           for index, rows in df.iterrows():
             log2fcs = [float(x) for x in rows["annotation_%s" %(int(pa["log2fc_column"])-1)].split(', ')]
             genes_up = sum(i > 0 for i in log2fcs)
