@@ -8,6 +8,8 @@ import seaborn as sns
 from functools import reduce
 from lifelines import CoxPHFitter
 from lifelines.statistics import logrank_test
+from lifelines.statistics import multivariate_logrank_test
+from lifelines.statistics import proportional_hazard_test
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 from plotly.graph_objs import *
@@ -305,9 +307,10 @@ def make_figure(df,pa):
         return df, fig
 
     elif str(pa["groups_value"]) != "None":
-
+        
         df_long=pd.DataFrame(columns=['day','status',str(pa["groups_value"])])
 
+        
         for row in range (0, len(df_ls)):
 
             if int(df_ls.loc[row, pa["yvals"]]) >= 1:
@@ -315,28 +318,62 @@ def make_figure(df,pa):
                 #print(dead)
                 for i in range (0,dead):
                     #print(i)
-                    df_long=df_long.append({'day':int(df_ls.loc[row,pa["xvals"]]), 'status':1, str(pa["groups_value"]):str(df_ls.loc[row,pa["groups_value"]])}, ignore_index=True)
-                    i=i+1    
+                    tmp_d=pd.DataFrame( [{'day':float(df_ls.loc[row,pa["xvals"]]), 'status':1, str(pa["groups_value"]):str(df_ls.loc[row,pa["groups_value"]])}] )
+                    df_long=pd.concat([df_long, tmp_d ])
+                    #df_long=df_long.append({'day':int(df_ls.loc[row,pa["xvals"]]), 'status':1, str(pa["groups_value"]):str(df_ls.loc[row,pa["groups_value"]])}, ignore_index=True)
+                    i=i+1
 
-            elif int(df_ls.loc[row, pa["censors_val"]]) >= 1:
-                censored=int(df_ls.loc[row, pa["censors_val"]])
-                #print(censored)
-                for c in range (0,censored):
-                    #print(c)
-                    df_long=df_long.append({'day':int(df_ls.loc[row,pa["xvals"]]), 'status':0, str(pa["groups_value"]):str(df_ls.loc[row,pa["groups_value"]])}, ignore_index=True)
-                    c=c+1
+            elif int(df_ls.loc[row, pa["yvals"]]) == 0:
+                tmp_=pd.DataFrame( [{'day':float(df_ls.loc[row,pa["xvals"]]), 'status':0, str(pa["groups_value"]):str(df_ls.loc[row,pa["groups_value"]])}] )
+                df_long=pd.concat([df_long, tmp_ ])
 
-        df_dummy=pd.get_dummies(df_long, drop_first=True, columns=[pa["groups_value"]])
+        df_long=df_long.reset_index(drop=True)
+        df_output=df_long.copy()
+        
+        #     elif pa["censors_val"] and int(df_ls.loc[row, pa["censors_val"]]) >= 1:
+        #         censored=int(df_ls.loc[row, pa["censors_val"]])
+        #         #print(censored)
+        #         for c in range (0,censored):
+        #             #print(c)
+        #             tmp_c=pd.DataFrame( [ {'day':int(df_ls.loc[row,pa["xvals"]]), 'status':0, str(pa["groups_value"]):str(df_ls.loc[row,pa["groups_value"]])} ] )
+        #             df_long=pd.concat([df_long, tmp_c ])
+        #             #df_long=df_long.append({'day':int(df_ls.loc[row,pa["xvals"]]), 'status':0, str(pa["groups_value"]):str(df_ls.loc[row,pa["groups_value"]])}, ignore_index=True)
+        #             c=c+1
 
-        results = logrank_test(df_dummy.loc[df_dummy['status'] == 1,'day'].tolist(),
-                       df_dummy.loc[df_dummy['status'] == 0,'day'].tolist(),
-                       df_dummy.loc[df_dummy['status'] == 1,'status'].tolist(),
-                       df_dummy.loc[df_dummy['status'] == 0,'status'].tolist(), alpha=.99)
+        # df_dummy=pd.get_dummies(df_long, drop_first=True, columns=[pa["groups_value"]])
+        # print(df_dummy)
 
+        # results = logrank_test(df_dummy.loc[df_dummy['status'] == 1,'day'].tolist(),
+        #                df_dummy.loc[df_dummy['status'] == 0,'day'].tolist(),
+        #                df_dummy.loc[df_dummy['status'] == 1,'status'].tolist(),
+        #                df_dummy.loc[df_dummy['status'] == 0,'status'].tolist(), alpha=.99)
+
+
+        results = multivariate_logrank_test(event_durations=df_long["day"], event_observed=df_long["status"], groups=df_long[pa["groups_value"]])
+        print(results.p_value)
+
+        
+        n_dict={}
+        for  con in pa["list_of_groups"]:
+            n_dict[con] = len( df_long.loc[ df_long[pa["groups_value"]] == con] )
+
+        for count, con in enumerate(pa["list_of_groups"]):
+            print (count+1, con)
+            df_long.loc[ df_long[pa["groups_value"]] == con, pa["groups_value"] ] = str(count+1)
 
         cph = CoxPHFitter()
-        cph.fit(df_dummy, duration_col='day', event_col='status')
-        
+        cph.fit(df_long, duration_col='day', event_col='status')
+
+        pht_ = proportional_hazard_test(cph, df_long, time_transform='rank')
+        pht_=dict(zip(pht_.name,pht_.p_value))
+        pht=pht_[pa["groups_value"]]
+        print(pht)
+
+        if pht >= 0.05:
+            assumptions="Yes"
+        else:
+            assumptions="No"
+
         cph_coeff=cph.summary
         cph_coeff=cph_coeff.reset_index()
 
@@ -346,18 +383,22 @@ def make_figure(df,pa):
         df_info['event col']=cph.event_col
         df_info['baseline estimation']='breslow'
         df_info['number of observations']=cph._n_examples
-        df_info['number of events observed']=len(df_dummy.loc[df_dummy['status']==1,])
+        df_info['number of events observed']=len(df_long.loc[df_long['status']==1,])
         df_info['partial log-likelihood']=cph.log_likelihood_
         df_info['Concordance']=cph.concordance_index_
         df_info['Partial AIC']=cph.AIC_partial_
-        df_info['log-likelihood ratio test']=cph.log_likelihood_ratio_test().test_statistic
-        df_info['P.value(log-likelihood ratio test)']=cph.log_likelihood_ratio_test().p_value
         df_info['log rank test']=results.test_statistic
         df_info['P.value(log rank test)']=results.p_value
+        df_info['log-likelihood ratio test']=cph.log_likelihood_ratio_test().test_statistic
+        df_info['P.value(log-likelihood ratio test)']=cph.log_likelihood_ratio_test().p_value
+        df_info['P.value(proportional-hazard-test)']=pht
+        df_info["Proportional hazard assumptions met"]=assumptions
 
         cph_stats=pd.DataFrame(df_info.items())
         cph_stats=cph_stats.rename(columns={0:'Statistic',1:'Value'})
         #cph_stats
+
+        print(cph_stats)
 
         tmp=[]
         
@@ -392,6 +433,7 @@ def make_figure(df,pa):
             
             ## Figure starting here
             PA_=[ g for g in pa["groups_settings"] if g["name"]==cond ][0]
+            print(PA_)
             
             ## Main Line arguments per group
             linewidth=float(PA_["linewidth_write"])
@@ -449,14 +491,31 @@ def make_figure(df,pa):
             else:
                 edgeColor=PA_["edgecolor"]
 
-
+            name_label=cond+" , n="+str(n_dict[cond])
             ## Main line 'rgb(31, 119, 180)'
             fig.add_trace(go.Scatter(
                 x=km.survival_function_.index, y=km.survival_function_[cond],
                 line=dict(shape='hv', width=linewidth, color=linecolor,  dash=linestyle),
-                showlegend=CI_legend,
-                name=cond
+                showlegend=CI_legend,mode='lines',
+                name=name_label
             ))
+            
+            ann_text='p(log_likelihood_ratio_test) : '+ str(round(df_info['P.value(log-likelihood ratio test)'], 5))+'<br>p(proportional_hazard_test) : '+str(round(df_info['P.value(proportional-hazard-test)'], 5))
+            fig.add_annotation(text=ann_text, 
+                    align='right',
+                    showarrow=False,
+                    xref='paper',
+                    yref='paper',
+                    #xanchor="right",
+                    #yanchor="middle",
+                    x=1.0,
+                    y=1.0,
+                    bordercolor='black',
+                    borderpad=2.5,
+                    font={'size':12},
+                    borderwidth=0)
+
+
 
             if PA_["ci_force_lines"] and PA_["Conf_Interval"]:
 
@@ -464,7 +523,7 @@ def make_figure(df,pa):
                 fig.add_trace(go.Scatter(
                 x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_upper_0.95"],
                 line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
-                showlegend=CI_legend,
+                showlegend=CI_legend,mode='lines',
                 name="95% Conf. Interval - "+cond
                 ))
 
@@ -472,7 +531,7 @@ def make_figure(df,pa):
                 fig.add_trace(go.Scatter(
                 x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_lower_0.95"],
                 line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
-                showlegend=CI_legend,
+                showlegend=CI_legend,mode='lines',
                 name="95% Conf. Interval - "+cond
                 ))
 
@@ -481,7 +540,7 @@ def make_figure(df,pa):
                     x=km.confidence_interval_.index, 
                     y=km.confidence_interval_[cond+"_upper_0.95"],
                     line=dict(shape='hv', width=0),
-                    showlegend=False,
+                    showlegend=False,mode='lines',
                     name="95% Conf. Interval - "+cond
                 ))
 
@@ -492,7 +551,7 @@ def make_figure(df,pa):
                     line=dict(shape='hv', width=0),
                     fill='tonexty',
                     fillcolor=ci_color_rgba,
-                    showlegend=False,
+                    showlegend=False,mode='lines',
                     name="95% Conf. Interval - "+cond
                 ))
 
@@ -501,7 +560,7 @@ def make_figure(df,pa):
                 fig.add_trace(go.Scatter(
                 x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_upper_0.95"],
                 line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
-                showlegend=CI_legend,
+                showlegend=CI_legend,mode='lines',
                 name="95% Conf. Interval - "+cond
                 ))
 
@@ -509,7 +568,7 @@ def make_figure(df,pa):
                 fig.add_trace(go.Scatter(
                 x=km.confidence_interval_.index, y=km.confidence_interval_[cond+"_lower_0.95"],
                 line=dict(shape='hv', width=ci_linewidth, color=ci_linecolor,  dash=ci_linestyle),
-                showlegend=CI_legend,
+                showlegend=CI_legend,mode='lines',
                 name="95% Conf. Interval - "+cond
                 ))
 
@@ -519,7 +578,7 @@ def make_figure(df,pa):
                     x=km.confidence_interval_.index, 
                     y=km.confidence_interval_[cond+"_upper_0.95"],
                     line=dict(shape='hv', width=0),
-                    showlegend=False,
+                    showlegend=False, mode='lines',
                     name="95% Conf. Interval - "+cond
                 ))
 
@@ -528,7 +587,7 @@ def make_figure(df,pa):
                     x=km.confidence_interval_.index,
                     y=km.confidence_interval_[cond+"_lower_0.95"],
                     line=dict(shape='hv', width=0),
-                    fill='tonexty',
+                    fill='tonexty',mode='lines',
                     fillcolor=ci_color_rgba,
                     showlegend=False,
                     name="95% Conf. Interval - "+cond
@@ -554,9 +613,11 @@ def make_figure(df,pa):
                         name=cond))
 
 
-        fig.show()     
+        fig.show()
 
-        return df, fig, cph_coeff, cph_stats
+        print(df_output)
+
+        return df, fig, cph_coeff, cph_stats,df_output
         
 
 ALLOWED_MARKERS=['circle', 'circle-open', 'circle-dot', 'circle-open-dot', 'square', 'square-open', 
