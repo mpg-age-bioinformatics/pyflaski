@@ -15,6 +15,14 @@ from collections import OrderedDict
 from plotly.graph_objs import *
 import plotly.graph_objs as go
 
+def nFormat(x):
+    if float(x) == 0:
+        return str(x)
+    elif ( float(x) < 0.01 ) & ( float(x) > -0.01 ) :
+        return str('{:.3e}'.format(float(x)))
+    else:
+        return str('{:.3f}'.format(float(x)))
+
 
 def make_figure(df,pa):
 
@@ -350,7 +358,7 @@ def make_figure(df,pa):
 
 
         results = multivariate_logrank_test(event_durations=df_long["day"], event_observed=df_long["status"], groups=df_long[pa["groups_value"]])
-        print(results.p_value)
+        # print(results.p_value)
 
         
         n_dict={}
@@ -358,7 +366,7 @@ def make_figure(df,pa):
             n_dict[con] = len( df_long.loc[ df_long[pa["groups_value"]] == con] )
 
         for count, con in enumerate(pa["list_of_groups"]):
-            print (count+1, con)
+            # print (count+1, con)
             df_long.loc[ df_long[pa["groups_value"]] == con, pa["groups_value"] ] = str(count+1)
 
         cph = CoxPHFitter()
@@ -367,7 +375,7 @@ def make_figure(df,pa):
         pht_ = proportional_hazard_test(cph, df_long, time_transform='rank')
         pht_=dict(zip(pht_.name,pht_.p_value))
         pht=pht_[pa["groups_value"]]
-        print(pht)
+        # print(pht)
 
         if pht >= 0.05:
             assumptions="Yes"
@@ -397,8 +405,6 @@ def make_figure(df,pa):
         cph_stats=pd.DataFrame(df_info.items())
         cph_stats=cph_stats.rename(columns={0:'Statistic',1:'Value'})
         #cph_stats
-
-        print(cph_stats)
 
         tmp=[]
         
@@ -433,7 +439,7 @@ def make_figure(df,pa):
             
             ## Figure starting here
             PA_=[ g for g in pa["groups_settings"] if g["name"]==cond ][0]
-            print(PA_)
+            # print(PA_)
             
             ## Main Line arguments per group
             linewidth=float(PA_["linewidth_write"])
@@ -499,8 +505,9 @@ def make_figure(df,pa):
                 showlegend=CI_legend,mode='lines',
                 name=name_label
             ))
+              
+            ann_text='P.Value(LLRT) : '+nFormat( df_info['P.value(log-likelihood ratio test)'] )+'<br>P.Value(PHT) : '+nFormat( df_info['P.value(proportional-hazard-test)'] )
             
-            ann_text='p(log_likelihood_ratio_test) : '+ str(round(df_info['P.value(log-likelihood ratio test)'], 5))+'<br>p(proportional_hazard_test) : '+str(round(df_info['P.value(proportional-hazard-test)'], 5))
             fig.add_annotation(text=ann_text, 
                     align='right',
                     showarrow=False,
@@ -615,7 +622,7 @@ def make_figure(df,pa):
 
         fig.show()
 
-        print(df_output)
+        # print(df_output)
 
         return df, fig, cph_coeff, cph_stats,df_output
         
