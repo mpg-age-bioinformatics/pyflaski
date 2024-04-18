@@ -7,6 +7,7 @@ from scipy.cluster.hierarchy import fcluster
 from scipy.spatial.distance import squareform
 import numpy as np
 import pandas as pd
+from .utils import indexchecker
 
 STANDARD_SIZES=[ str(i) for i in list(range(101)) ]
 STANDARD_COLORS=["blue","green","red","cyan","magenta","yellow","black","white"]
@@ -39,6 +40,7 @@ def make_figure(df,pa):
 
     tmp=df.copy()
     tmp.index=tmp[pa["xvals"]].tolist()
+    indexchecker(tmp)
     tmp=tmp[pa["yvals"]]
 
     tmp=tmp.dropna(axis=0, how="all")

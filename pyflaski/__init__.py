@@ -22,7 +22,6 @@ import pyflaski.lineplot
 
 import json
 
-
 def read_session(session_file):
     session={}
     if session_file.rsplit('.', 1)[1].lower() != "json"  :
@@ -54,3 +53,4 @@ def read_session(session_file):
     #     session[k]=session_[k]
 
     return session, None
+
