@@ -144,7 +144,7 @@ def make_figure(df,pa):
         missing_values={}
         for c in tmp.columns.tolist()  :
             tmp_=tmp[[c]]
-            infs=list(tmp_.index[ np.isinf(tmp_).any(1)])
+            infs=list(tmp_.index[ np.isinf(tmp_).any(axis=1)])
             mvalues=tmp_[ tmp_[c].isnull() ].index.tolist()
             mvalues=mvalues+infs
             if mvalues:
