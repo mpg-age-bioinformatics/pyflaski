@@ -21,12 +21,12 @@ def GET_COLORLIST(rgb,fillcolor,tmp,pa,pab):
             if pab["hue"]==None:
                 color=[None]*len(tmp[pab["x_val"]].unique())
             else:
-                color=[None]*2
+                color=[None]*len(tmp[pab["hue"]].unique())
         else:
             if pab["hue"]==None:
                 color=[pa[fillcolor]]*len(tmp[pab["x_val"]].unique())
             else:
-                color=[pa[fillcolor]]*2
+                color=[pa[fillcolor]]*len(tmp[pab["hue"]].unique())
     return color
 
 def make_figure(df,pa):
@@ -180,6 +180,7 @@ def make_figure(df,pa):
                     hoverlabel=hoverlabel,fillcolor=color,line=line,meanline=meanline,side=pa["vp_side"],spanmode=pa["vp_span"]))
 
         else:
+
             if "Swarmplot" in pa["style"]:    
 
                 if pa["vp_mode"]=="group":
@@ -191,7 +192,7 @@ def make_figure(df,pa):
                         size=pab["marker_size"],color=mcolor,line=dict(color=mlcolor,width=pab["marker_line_width"],\
                         outliercolor=pab["marker_line_outliercolor"],outlierwidth=pab["marker_line_outlierwidth"]))
 
-                        fig.add_trace(go.Violin(y=tmp[pab["y_val"]][tmp[pab["hue"]] == each ],x=tmp[pab["x_val"]][tmp[pab["hue"]] == each ],\
+                        fig.add_trace(go.Violin(y=tmp[tmp[pab["hue"]] == each ][pab["y_val"]],x=tmp[tmp[pab["hue"]] == each ][pab["x_val"]],\
                         legendgroup=each,name=each,scalegroup=each,text=vp_text,width=pab["vp_width"],orientation=pab["vp_orient"],\
                         bandwidth=pab["vp_bw"],opacity=pab["opacity"],hoverinfo=pa["vp_hoverinfo"],hoveron=pa["vp_hoveron"],\
                         hoverlabel=hoverlabel,fillcolor=color,line=line,meanline=meanline,spanmode=pa["vp_span"],
