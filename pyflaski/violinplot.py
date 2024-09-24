@@ -139,7 +139,6 @@ def make_figure(df,pa):
 
 
     #MAIN BODY
-
     if "Violinplot" in pa["style"]:
         if pa["vp_label"]:
             vp_text=tmp[pa["vp_label"]].tolist()
@@ -147,6 +146,7 @@ def make_figure(df,pa):
             vp_text=pa["vp_text"].split(",")
         else:
             vp_text=pa["vp_text"]
+        
         hoverlabel=dict(bgcolor=pab["vp_hover_bgcolor"],bordercolor=pab["vp_hover_bordercolor"],\
             font=dict(family=pab["vp_hover_fontfamily"],size=pab["vp_hover_fontsize"],color=pab["vp_hover_fontcolor"]),\
             align=pa["vp_hover_align"])
@@ -160,25 +160,28 @@ def make_figure(df,pa):
         if pab["hue"]==None:
 
             if "Swarmplot" in pa["style"]:
+
                 for each,color,mcolor,lcolor,mlcolor in zip(tmp[pab["x_val"]].unique(),vp_color,marker_color,vp_linecolor,marker_linecolor):
                     line=dict(color=lcolor,width=pab["vp_linewidth"])
                     marker=dict(outliercolor=pab["marker_outliercolor"],symbol=pa["marker_symbol"],opacity=pab["marker_opacity"],\
                     size=pab["marker_size"],color=mcolor,line=dict(color=mlcolor,width=pab["marker_line_width"],\
                     outliercolor=pab["marker_line_outliercolor"],outlierwidth=pab["marker_line_outlierwidth"]))
 
-                    fig.add_trace(go.Violin(y=tmp[pab["y_val"]],name=each,text=vp_text,width=pab["vp_width"],orientation=pab["vp_orient"],\
+                    fig.add_trace(go.Violin(y=tmp[ tmp[ pab["x_val"] ]==each][pab["y_val"]],name=each,text=vp_text,width=pab["vp_width"],orientation=pab["vp_orient"],\
                     bandwidth=pab["vp_bw"],opacity=pab["opacity"],hoverinfo=pa["vp_hoverinfo"],hoveron=pa["vp_hoveron"],\
                     hoverlabel=hoverlabel,fillcolor=color,line=line,meanline=meanline,side=pa["vp_side"],spanmode=pa["vp_span"],\
                     points=pa["points"],marker=marker,pointpos=pab["pointpos"]))
+
             else:
                 for each,color,lcolor in zip(tmp[pab["x_val"]].unique(),vp_color,vp_linecolor):
                     line=dict(color=lcolor,width=pab["vp_linewidth"])
-                    fig.add_trace(go.Violin(y=tmp[pab["y_val"]],name=each,text=vp_text,width=pab["vp_width"],orientation=pab["vp_orient"],\
+                    fig.add_trace(go.Violin(y=tmp[tmp[pab["x_val"]]==each][pab["y_val"]],name=each,text=vp_text,width=pab["vp_width"],orientation=pab["vp_orient"],\
                     bandwidth=pab["vp_bw"],opacity=pab["opacity"],hoverinfo=pa["vp_hoverinfo"],hoveron=pa["vp_hoveron"],\
                     hoverlabel=hoverlabel,fillcolor=color,line=line,meanline=meanline,side=pa["vp_side"],spanmode=pa["vp_span"]))
 
         else:
             if "Swarmplot" in pa["style"]:    
+
                 if pa["vp_mode"]=="group":
                     for each,color,mcolor,lcolor,mlcolor in zip(list(set(tmp[pab["hue"]])),vp_color,marker_color,vp_linecolor,marker_linecolor):
                         
@@ -249,14 +252,14 @@ def make_figure(df,pa):
                 size=pab["marker_size"],color=mcolor,line=dict(color=mlcolor,width=pab["marker_line_width"],\
                 outliercolor=pab["marker_line_outliercolor"],outlierwidth=pab["marker_line_outlierwidth"]))
 
-                fig.add_trace(go.Box(y=tmp[pab["y_val"]],name=each,opacity=pab["bp_opacity"],fillcolor=color,\
+                fig.add_trace(go.Box(y=tmp[ tmp[ pab["x_val"] ]==each][pab["y_val"]],name=each,opacity=pab["bp_opacity"],fillcolor=color,\
                 orientation=pab["bp_orient"],hoverinfo=pa["bp_hoverinfo"],hoveron=pa["bp_hoveron"],\
                 width=pab["bp_width"],line=dict(color=lcolor,width=pab["bp_linewidth"]),boxmean=pab["bp_boxmean"],\
                 quartilemethod=pa["bp_quartilemethod"],text=bp_text,hoverlabel=hoverlabel,notched=pab["bp_notched"],\
                 boxpoints=pa["points"],marker=marker,pointpos=pab["pointpos"]))
         else:
             for each,color,lcolor in zip(tmp[pab["x_val"]].unique(),bp_color,bp_linecolor):
-                fig.add_trace(go.Box(y=tmp[pab["y_val"]],name=each,opacity=pab["bp_opacity"],fillcolor=color,\
+                fig.add_trace(go.Box(y=tmp[ tmp[ pab["x_val"] ]==each][pab["y_val"]],name=each,opacity=pab["bp_opacity"],fillcolor=color,\
                 orientation=pab["bp_orient"],hoverinfo=pa["bp_hoverinfo"],hoveron=pa["bp_hoveron"],\
                 width=pab["bp_width"],line=dict(color=lcolor,width=pab["bp_linewidth"]),boxmean=pab["bp_boxmean"],\
                 quartilemethod=pa["bp_quartilemethod"],text=bp_text,hoverlabel=hoverlabel,notched=pab["bp_notched"]))
