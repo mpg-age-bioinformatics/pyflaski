@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
 import sys
-from suds.client import Client as sudsclient
+# from suds.client import Client as sudsclient
+from zeep import Client as zeepclient
+import logging
 import ssl
 import os
 # if "PYFLASKI" in os.environ:
@@ -56,8 +58,10 @@ ENSMUSG00000050914,ENSMUSG00000031765,ENSMUSG00000068758,ENSMUSG00000061126,ENSM
 def debug_david(user,DEBUG_GENES=DEBUG_GENES, ids=None):
     ssl._create_default_https_context = ssl._create_unverified_context
     url = 'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl'
-    client = sudsclient(url)
-    client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
+    logging.getLogger("zeep").setLevel(logging.ERROR)
+    client = zeepclient(url)
+    # client = sudsclient(url)
+    # client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
     client_auth = client.service.authenticate(user)
     if not ids:
       ids=DEBUG_GENES
@@ -208,8 +212,10 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
 
     ssl._create_default_https_context = ssl._create_unverified_context
     url = 'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl'
+    logging.getLogger("zeep").setLevel(logging.ERROR)
     try:
-      client = sudsclient(url)
+      # client = sudsclient(url)
+       client = zeepclient(url)
     except:
       return None, None, None, "Could not connect to DAVID. Server might be down."
     # print("connected to server, checking user")
@@ -217,7 +223,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
     if pa["user"] == None:
       return(None, None, None, 'Please give in a register DAVID email in "Input" > "DAVID registered email". If you do not yet have a registered address you need to register with DAVID - https://david.ncifcrf.gov/webservice/register.htm. Please be aware that you will not receive any confirmation email.')
 
-    client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
+    # client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
     try:
       client_auth = client.service.authenticate(user)
     except:

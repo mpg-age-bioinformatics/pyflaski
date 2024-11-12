@@ -45,3 +45,4 @@ kaleido==0.2.1
 fuzzywuzzy==0.18.0
 python-Levenshtein==0.20.8
 xlrd
+zeep==4.3.1
