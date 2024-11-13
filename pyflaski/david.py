@@ -298,10 +298,12 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
     if size_report > 0:
         df = []
         for r in client_report:
-            d = dict(r)
+            # d = dict(r)
             line = []
             for f in david_fields:
-                line.append(str(d[f]).encode('ascii','ignore'))
+                # line.append(str(d[f]).encode('ascii','ignore'))
+              value = getattr(r, f, None)
+              line.append(str(value).encode('ascii','ignore'))
             df.append(line)
         df = pd.DataFrame(df)
         df.columns=david_fields
