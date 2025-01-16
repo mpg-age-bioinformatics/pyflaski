@@ -216,8 +216,8 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
     try:
       # client = sudsclient(url)
        client = zeepclient(url)
-    except:
-      return None, None, None, "Could not connect to DAVID. Server might be down."
+    except Exception as e:
+      return None, None, None, f"Could not connect to DAVID. Server might be down. Error: {e}"
     # print("connected to server, checking user")
     
     if pa["user"] == None:
@@ -226,8 +226,8 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
     # client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
     try:
       client_auth = client.service.authenticate(user)
-    except:
-      return None, None, None, "Could not connect to DAVID. Server might be down."
+    except Exception as e:
+      return None, None, None, f"Could not connect to DAVID. Server might be down. Error: {e}"
     
     if str(client_auth) == "Failed. For user registration, go to http://david.abcc.ncifcrf.gov/webservice/register.htm" :
       msg = "Failed. For user registration, go to https://david.ncifcrf.gov/webservice/register.htm"
