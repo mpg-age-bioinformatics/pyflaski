@@ -55,13 +55,45 @@ ENSMUSG00000038292,ENSMUSG00000031760,ENSMUSG00000007950,ENSMUSG00000039617,ENSM
 ENSMUSG00000008206,ENSMUSG00000063018,ENSMUSG00000091568,ENSMUSG00000033931,ENSMUSG00000021701,ENSMUSG00000022016,ENSMUSG00000023995,ENSMUSG00000030630,ENSMUSG00000032796,\
 ENSMUSG00000029603,ENSMUSG00000048126,ENSMUSG00000053604,ENSMUSG00000097757,ENSMUSG00000087084,ENSMUSG00000018796,ENSMUSG00000037103,ENSMUSG00000017652,ENSMUSG00000020184,\
 ENSMUSG00000050914,ENSMUSG00000031765,ENSMUSG00000068758,ENSMUSG00000061126,ENSMUSG00000004952,ENSMUSG00000031731,ENSMUSG00000022754,ENSMUSG00000030523,ENSMUSG00000002668"
-def debug_david(user,DEBUG_GENES=DEBUG_GENES, ids=None):
+
+def connect_to_david():
+    """
+    Tries to connect to the DAVID web service using two known endpoints.
+
+    Returns:
+        A tuple (client, error):
+            - client: Zeep client if successful, else None
+            - error: Error message if all attempts fail, else None
+    """
     ssl._create_default_https_context = ssl._create_unverified_context
-    url = 'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl'
+
+    urls = [
+        'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl',
+        'https://davidbioinformatics.nih.gov/webservice/services/DAVIDWebService?wsdl'
+    ]
+
     logging.getLogger("zeep").setLevel(logging.ERROR)
-    client = zeepclient(url)
-    # client = sudsclient(url)
-    # client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
+    errors = []
+
+    for url in urls:
+        try:
+            client = zeepclient(url)
+            return client, None
+        except Exception as e:
+            errors.append(f"Endpoint Connection Error -> {e}")
+
+    error_msg = "Could not connect to DAVID. Server might be down. Endpoints failed\n" + "\n".join(errors)
+    return None, error_msg
+
+
+def debug_david(user,DEBUG_GENES=DEBUG_GENES, ids=None):
+    # ssl._create_default_https_context = ssl._create_unverified_context
+    # url = 'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl'
+    # logging.getLogger("zeep").setLevel(logging.ERROR)
+    # client = zeepclient(url)
+    # # client = sudsclient(url)
+    # # client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
+    client, david_error = connect_to_david()
     client_auth = client.service.authenticate(user)
     if not ids:
       ids=DEBUG_GENES
@@ -210,15 +242,9 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
     if ids_bg:
       ids_bg = ','.join([str(i) for i in ids_bg])
 
-    ssl._create_default_https_context = ssl._create_unverified_context
-    url = 'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl'
-    logging.getLogger("zeep").setLevel(logging.ERROR)
-    try:
-      # client = sudsclient(url)
-       client = zeepclient(url)
-    except Exception as e:
-      return None, None, None, f"Could not connect to DAVID. Server might be down. Error: {e}"
-    # print("connected to server, checking user")
+    client, david_error = connect_to_david()
+    if client is None:
+       return None, None, None, david_error
     
     if pa["user"] == None:
       return(None, None, None, 'Please give in a register DAVID email in "Input" > "DAVID registered email". If you do not yet have a registered address you need to register with DAVID - https://david.ncifcrf.gov/webservice/register.htm. Please be aware that you will not receive any confirmation email.')
