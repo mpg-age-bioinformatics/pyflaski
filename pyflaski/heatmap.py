@@ -148,6 +148,7 @@ def make_figure(df,pa):
             mvalues=tmp_[ tmp_[c].isnull() ].index.tolist()
             mvalues=mvalues+infs
             if mvalues:
+                mvalues=[ str(i) for i in mvalues ]
                 missing_values[c]=", ".join(mvalues)
         if missing_values:
             message="\nYou have either infinite or missing values on your data.\nYou will need to deactivate both columns and rows clustering as well as 'Find rows'.\nIf log2 or log10 transformations are taking place try adding a constant eg. 1.\nMissing values:\n"
