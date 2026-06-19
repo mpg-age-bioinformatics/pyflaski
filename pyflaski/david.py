@@ -3,6 +3,9 @@ import numpy as np
 import sys
 # from suds.client import Client as sudsclient
 from zeep import Client as zeepclient
+from zeep.transports import Transport
+from requests import Session
+import urllib3
 import logging
 import ssl
 import os
@@ -57,32 +60,27 @@ ENSMUSG00000029603,ENSMUSG00000048126,ENSMUSG00000053604,ENSMUSG00000097757,ENSM
 ENSMUSG00000050914,ENSMUSG00000031765,ENSMUSG00000068758,ENSMUSG00000061126,ENSMUSG00000004952,ENSMUSG00000031731,ENSMUSG00000022754,ENSMUSG00000030523,ENSMUSG00000002668"
 
 def connect_to_david():
-    """
-    Tries to connect to the DAVID web service using two known endpoints.
-
-    Returns:
-        A tuple (client, error):
-            - client: Zeep client if successful, else None
-            - error: Error message if all attempts fail, else None
-    """
-    ssl._create_default_https_context = ssl._create_unverified_context
-
     urls = [
-        'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl',
-        'https://davidbioinformatics.nih.gov/webservice/services/DAVIDWebService?wsdl'
+        'https://davidbioinformatics.nih.gov/webservice/services/DAVIDWebService?wsdl',
+        # 'https://david.ncifcrf.gov/webservice/services/DAVIDWebService?wsdl'
     ]
 
     logging.getLogger("zeep").setLevel(logging.ERROR)
     errors = []
 
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    session = Session()
+    session.verify = False
+    transport = Transport(session=session, timeout=30)
+
     for url in urls:
         try:
-            client = zeepclient(url)
+            client = zeepclient(url, transport=transport)
             return client, None
         except Exception as e:
-            errors.append(f"Endpoint Connection Error -> {e}")
+            errors.append(f"Endpoint Connection Error for {url} -> {e}")
 
-    error_msg = "Could not connect to DAVID. Server might be down. Endpoints failed\n" + "\n".join(errors)
+    error_msg = "Could not connect to DAVID. Endpoint failed.\n" + "\n".join(errors)
     return None, error_msg
 
 
