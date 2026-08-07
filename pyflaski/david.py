@@ -245,7 +245,7 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
        return None, None, None, david_error
     
     if pa["user"] == None:
-      return(None, None, None, 'Please give in a register DAVID email in "Input" > "DAVID registered email". If you do not yet have a registered address you need to register with DAVID - https://david.ncifcrf.gov/webservice/register.htm. Please be aware that you will not receive any confirmation email.')
+      return(None, None, None, 'Please give in a register DAVID email in "Input" > "DAVID registered email". If you do not yet have a registered address you need to register with DAVID - https://davidbioinformatics.nih.gov/webservice/register.htm. Please be aware that you will not receive any confirmation email.')
 
     # client.wsdl.services[0].setlocation('https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap11Endpoint/')
     try:
@@ -253,8 +253,8 @@ def run_david(pa, path_to_ensembl_maps="/myapp/pyflaski/data/david"):
     except Exception as e:
       return None, None, None, f"Could not connect to DAVID. Server might be down. Error: {e}"
     
-    if str(client_auth) == "Failed. For user registration, go to http://david.abcc.ncifcrf.gov/webservice/register.htm" :
-      msg = "Failed. For user registration, go to https://david.ncifcrf.gov/webservice/register.htm"
+    if str(client_auth) == "Failed. For user registration, go to http://davidbioinformatics.nih.gov/webservice/register.htm" :
+      msg = "Failed. For user registration, go to https://davidbioinformatics.nih.gov/webservice/register.htm"
       return None, None, None, msg
     if verbose:
       print('User Authentication:', client_auth)
